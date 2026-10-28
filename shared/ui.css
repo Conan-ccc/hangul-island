@@ -1,0 +1,33 @@
+* { box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+html { touch-action: manipulation; height: 100%; }
+body {
+  margin: 0; height: 100%; overflow: hidden;
+  font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  background: #FFF5FA; color: #4A3A48;
+}
+input, textarea, select { -webkit-user-select: text; user-select: text; font: inherit; }
+.draggable { touch-action: none; cursor: grab; }
+.dragging { cursor: grabbing; filter: drop-shadow(0 6px 6px rgba(0,0,0,.18)); }
+.btn-pic {
+  min-width: 64px; min-height: 64px; border: none; border-radius: 22px; background: #fff;
+  box-shadow: 0 4px 0 rgba(0,0,0,.08); display: inline-flex; align-items: center; justify-content: center; padding: 8px;
+}
+.btn-pic:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,.08); }
+.card {
+  min-width: 72px; min-height: 72px; padding: 6px 14px; border-radius: 18px; background: #fff;
+  border: 3px solid #FFC2D9; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 40px; font-weight: 700; color: #4A3A48; box-shadow: 0 4px 0 rgba(0,0,0,.08);
+}
+.glow { animation: glow 1s ease-in-out infinite; }
+@keyframes glow { 0%,100% { box-shadow: 0 0 0 0 rgba(255,216,77,.9); } 50% { box-shadow: 0 0 0 12px rgba(255,216,77,0); } }
+.wiggle { animation: wiggle .4s ease-in-out; }
+@keyframes wiggle { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+.boing { animation: boing .6s ease-out; transform-origin: 50% 90%; }
+@keyframes boing { 0% { transform: scale(1); } 30% { transform: scale(1.15,.85); } 55% { transform: scale(.92,1.1); } 80% { transform: scale(1.04,.97); } 100% { transform: scale(1); } }
+.hug { animation: hug .9s ease-in-out; transform-origin: 50% 90%; }
+@keyframes hug { 0%,100% { transform: scale(1); } 40%,60% { transform: scale(1.12) rotate(-3deg); } }
+@keyframes tw { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+.tw { animation: tw 1.6s ease-in-out infinite; }
+.tw2 { animation: tw 1.6s ease-in-out .8s infinite; }
+.char svg { overflow: visible; width: 100%; height: auto; display: block; }
+.overlay { position: fixed; inset: 0; z-index: 100; }
