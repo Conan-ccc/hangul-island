@@ -30,6 +30,17 @@ export function createTracer(container, key, opts = {}) {
   };
   place();
 
+  // Demo: a star travels along the stroke from its start, showing where and which way to go
+  const showWay = stroke => {
+    svg.querySelectorAll('.trace-demo').forEach(n => n.remove());
+    const g = mk('g', { class: 'trace-demo' });
+    const star = mk('circle', { r: '5', fill: '#FF6FA5', stroke: '#fff', 'stroke-width': '2' });
+    const mot = mk('animateMotion', { dur: '1.4s', repeatCount: '2', fill: 'freeze', path: d(stroke) });
+    star.appendChild(mot); g.appendChild(star); svg.appendChild(g);
+    try { mot.beginElement(); } catch { /* older engines start automatically */ }
+    setTimeout(() => g.remove(), 3000);
+  };
+
   const toLocal = e => {
     const m = svg.getScreenCTM();
     if (!m) return [0, 0];
@@ -62,8 +73,8 @@ export function createTracer(container, key, opts = {}) {
       if (idx >= strokes.length) { finished = true; opts.onComplete?.(); }
     } else {
       opts.onStroke?.(idx, false);
-      dot.setAttribute('r', '10');
-      speak('여기서부터 해볼까?');
+      showWay(strokes[idx]);
+      speak('이렇게 해볼까?');
     }
     pts = null;
   };

@@ -3,6 +3,7 @@ import { playSfx } from './fx.js';
 
 export const HIT_PAD = 24;
 let activePointer = null; // one drag at a time across the whole page
+let activeEl = null;
 
 function hit(rect, x, y) {
   return x >= rect.left - HIT_PAD && x <= rect.right + HIT_PAD && y >= rect.top - HIT_PAD && y <= rect.bottom + HIT_PAD;
@@ -14,8 +15,11 @@ export function makeDraggable(el, opts) {
   el.style.touchAction = 'none';
 
   const down = e => {
+    // a piece removed mid-drag never gets pointerup: drop the stale lock
+    if (activePointer !== null && !(activeEl && activeEl.isConnected)) { activePointer = null; activeEl = null; }
     if (activePointer !== null || el.dataset.locked === '1') return;
     activePointer = pid = e.pointerId;
+    activeEl = el;
     sx = e.clientX; sy = e.clientY;
     try { el.setPointerCapture(pid); } catch { /* ignore */ }
     el.style.transition = 'none';
@@ -36,7 +40,7 @@ export function makeDraggable(el, opts) {
   };
   const up = e => {
     if (e.pointerId !== pid) return;
-    pid = null; activePointer = null;
+    pid = null; activePointer = null; activeEl = null;
     el.classList.remove('dragging');
     const target = (opts.targets() || []).find(t => hit(t.getBoundingClientRect(), e.clientX, e.clientY)) || null;
     let ok = false;
@@ -46,18 +50,22 @@ export function makeDraggable(el, opts) {
   };
   const cancel = e => {
     if (e.pointerId !== pid) return;
-    pid = null; activePointer = null; el.classList.remove('dragging'); back();
+    pid = null; activePointer = null; activeEl = null; el.classList.remove('dragging'); back();
   };
   el.addEventListener('pointerdown', down);
   el.addEventListener('pointermove', move);
   el.addEventListener('pointerup', up);
   el.addEventListener('pointercancel', cancel);
+  el.addEventListener('lostpointercapture', cancel);
   return () => {
-    if (pid !== null) activePointer = null;
+    if (pid !== null) { activePointer = null; activeEl = null; }
     el.removeEventListener('pointerdown', down); el.removeEventListener('pointermove', move);
     el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', cancel);
   };
 }
+
+// Freeze every piece in a list (after a round is solved)
+export function lockAll(els) { for (const e of els) if (e) e.dataset.locked = '1'; }
 
 // Put an element into a slot: the caller re-parents it; this resets drag transforms.
 export function settle(el) {

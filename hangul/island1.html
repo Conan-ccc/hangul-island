@@ -19,7 +19,7 @@
 import { startIsland } from '../shared/island.js';
 import { loadState } from '../shared/save.js';
 import { buildIsland1Content } from '../shared/island1-content.js';
-import { pickItems } from '../shared/mastery.js';
+import { pickItems, isMastered } from '../shared/mastery.js';
 import * as fruit from '../shared/activities/fruit.js';
 import * as bridge from '../shared/activities/bridge.js';
 import * as gift from '../shared/activities/gift.js';
@@ -38,15 +38,16 @@ startIsland({
     tree: c.fruitTargets,
     bridge: [...c.givenSyl, c.given, c.full],
     animals: c.family.map(f => f.name).concat(c.family.length ? [] : [c.full]),
-    beach: [c.given],
+    beach: c.findTargets,
     door: [],
   },
   places: [
     { id: 'tree', icon: 'tree', x: 300, y: 260, run: fruit.run, params: () => ({ targets: pickItems(isl(), c.fruitTargets, 4), distractors: c.fruitDistractors, rounds: 4 }) },
-    { id: 'bridge', icon: 'bridge', x: 560, y: 200, run: bridge.run, params: () => ({ words: c.bridgeWords }) },
+    // full name (with surname) joins the bridge only after the given name is learned (spec: later in island 1)
+    { id: 'bridge', icon: 'bridge', x: 560, y: 200, run: bridge.run, params: () => ({ words: isMastered(isl(), c.given) ? c.bridgeWords : c.bridgeWords.slice(0, 1) }) },
     { id: 'animals', icon: 'animals', x: 760, y: 340, run: gift.run, params: () => ({ requests: c.giftRequests, rounds: 3 }) },
     { id: 'door', icon: 'door', x: 640, y: 520, run: door.run, params: () => ({ keys: ['ㅡ', 'ㅣ', 'ㅇ'], guideOpacity: 0.5 }) },
-    { id: 'beach', icon: 'beach', x: 330, y: 500, run: find.run, params: () => ({ target: c.findTarget, decoys: c.findDecoys, count: 6 }) },
+    { id: 'beach', icon: 'beach', x: 330, y: 500, run: find.run, params: () => { const t = pickItems(isl(), c.findTargets, 1)[0] || c.findTarget; return { target: t, decoys: c.findDecoysFor(t), count: 6 }; } },
   ],
 });
 </script>

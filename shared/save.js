@@ -53,7 +53,12 @@ export function migrate(raw) {
   return st;
 }
 
-export function loadState(storage = globalThis.localStorage) {
+function defaultStorage() {
+  try { return globalThis.localStorage || null; } catch { return null; }
+}
+
+export function loadState(storage) {
+  if (storage === undefined) storage = defaultStorage();
   let txt = null;
   try { txt = storage ? storage.getItem(SAVE_KEY) : null; } catch { txt = null; }
   if (!txt) return defaultState();
@@ -65,7 +70,8 @@ export function loadState(storage = globalThis.localStorage) {
   }
 }
 
-export function saveState(state, storage = globalThis.localStorage) {
+export function saveState(state, storage) {
+  if (storage === undefined) storage = defaultStorage();
   try {
     const { saveError, ...rest } = state;
     storage.setItem(SAVE_KEY, JSON.stringify({ ...rest, saveError: false }));

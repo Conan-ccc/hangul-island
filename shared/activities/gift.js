@@ -1,6 +1,6 @@
 // 동물 친구 선물: an animal asks for a family member's name card
-import { makeDraggable } from '../drag.js';
-import { SCENES, shuffle, card, at, el, glow, unglow, cheer, buddy, wait } from './common.js';
+import { makeDraggable, lockAll } from '../drag.js';
+import { SCENES, shuffle, card, at, el, glow, unglow, cheer, buddy, wait, ask } from './common.js';
 
 const ANIMALS = [
   '<svg viewBox="0 0 120 140" width="100%"><ellipse cx="44" cy="30" rx="11" ry="28" fill="#fff" stroke="#eee"/><ellipse cx="76" cy="30" rx="11" ry="28" fill="#fff" stroke="#eee"/><circle cx="60" cy="74" r="36" fill="#fff" stroke="#eee"/><circle cx="48" cy="72" r="5" fill="#3B2A35"/><circle cx="72" cy="72" r="5" fill="#3B2A35"/><path d="M55 86 q5 5 10 0" stroke="#3B2A35" stroke-width="2.5" fill="none"/><ellipse cx="60" cy="125" rx="30" ry="14" fill="#fff" stroke="#eee"/></svg>',
@@ -25,9 +25,12 @@ export async function run(ctx, { requests, rounds = 3 }) {
       c.addEventListener('pointerdown', () => ctx.speak(t));
       return c;
     });
-    const ask = req.role === '나' ? ctx.call + ', 네 이름을 찾아줄래?' : ctx.phrase('giveGift', { role: req.role });
-    ctx.speak(ask);
-    bubble.addEventListener('click', () => ctx.speak(ask));
+    const line = req.role === '나' ? ctx.call + ', 네 이름을 찾아줄래?'
+      : req.role === '기타' ? req.answer + ', 이 이름을 찾아줄래?'
+      : ctx.phrase('giveGift', { role: req.role });
+    const answerCard = cards.find(x => x.dataset.text === req.answer);
+    ask(ctx, line, answerCard);
+    bubble.addEventListener('click', () => ask(ctx, line, answerCard));
     let wrong = 0;
     await new Promise(done => {
       for (const c of cards) makeDraggable(c, {
@@ -35,7 +38,7 @@ export async function run(ctx, { requests, rounds = 3 }) {
         onDrop: tg => {
           if (!tg) return false;
           if (c.dataset.text === req.answer) {
-            c.dataset.locked = '1'; c.style.transition = 'all .4s'; c.style.left = '70%'; c.style.top = '58%'; c.style.transform = 'scale(.3)'; c.style.opacity = '0';
+            lockAll(cards); c.style.transition = 'all .4s'; c.style.left = '70%'; c.style.top = '58%'; c.style.transform = 'scale(.3)'; c.style.opacity = '0';
             animal.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-30px)' }, { transform: 'translateY(0)' }], { duration: 500, iterations: 2 });
             cheer(ctx, animal);
             ctx.onSuccess(req.answer, 'gift'); results.push({ item: req.answer, type: 'gift' });

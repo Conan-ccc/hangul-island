@@ -42,7 +42,7 @@ function synth() { return globalThis.speechSynthesis || null; }
 function pickVoice() {
   const s = synth(); if (!s || !s.getVoices) return null;
   const vs = s.getVoices().filter(v => /^ko/i.test(v.lang));
-  return vs.find(v => /yuna/i.test(v.name)) || vs[0] || null;
+  return vs.find(v => v.default) || vs.find(v => v.localService) || vs[0] || null;
 }
 
 export function unlockSpeech() {
@@ -56,13 +56,14 @@ export function unlockSpeech() {
   } catch { /* ignore */ }
 }
 
+// Resolves true when the utterance finished, false when there is no voice, it errored or it timed out.
 export function speak(text, opts = {}) {
   const s = synth();
-  if (!s || typeof SpeechSynthesisUtterance === 'undefined' || !text) return Promise.resolve();
+  if (!s || typeof SpeechSynthesisUtterance === 'undefined' || !text) return Promise.resolve(false);
   return new Promise(resolve => {
     let done = false;
-    const finish = () => { if (!done) { done = true; clearTimeout(timer); resolve(); } };
-    const timer = setTimeout(finish, Math.max(3000, String(text).length * 400));
+    const finish = ok => { if (!done) { done = true; clearTimeout(timer); resolve(ok); } };
+    const timer = setTimeout(() => finish(false), Math.max(3000, String(text).length * 400));
     try {
       s.cancel();
       const u = new SpeechSynthesisUtterance(String(text));
@@ -72,8 +73,8 @@ export function speak(text, opts = {}) {
       u.volume = volume;
       if (!voice) voice = pickVoice();
       if (voice) u.voice = voice;
-      u.onend = finish; u.onerror = finish;
+      u.onend = () => finish(true); u.onerror = () => finish(false);
       s.speak(u);
-    } catch { finish(); }
+    } catch { finish(false); }
   });
 }

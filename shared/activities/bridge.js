@@ -1,6 +1,6 @@
 // 다리 놓기: drag syllable blocks into the bridge slots, left to right
-import { makeDraggable, settle } from '../drag.js';
-import { SCENES, shuffle, card, el, glow, unglow, cheer, buddy, wait } from './common.js';
+import { makeDraggable, settle, lockAll } from '../drag.js';
+import { SCENES, shuffle, card, el, glow, unglow, cheer, buddy, wait, ask } from './common.js';
 
 const EXTRA = ['바', '다', '마', '소', '오', '리', '무'];
 
@@ -27,7 +27,7 @@ export async function run(ctx, { words }) {
       b.addEventListener('pointerdown', () => ctx.speak(t));
       return b;
     });
-    ctx.speak(ctx.phrase('buildBridge', { item: word.join('') }));
+    ask(ctx, ctx.phrase('buildBridge', { item: word.join('') }), blocks.find(x => x.dataset.text === word[0]));
     let next = 0, wrong = 0;
     await new Promise(done => {
       for (const b of blocks) {
@@ -41,7 +41,7 @@ export async function run(ctx, { words }) {
               ctx.sfx('pop');
               ctx.onSuccess(word[next], 'bridge'); results.push({ item: word[next], type: 'bridge' });
               next += 1; wrong = 0; unglow(ctx.stage);
-              if (next >= word.length) setTimeout(done, 300);
+              if (next >= word.length) { lockAll(blocks); setTimeout(done, 300); }
               return true;
             }
             wrong += 1;

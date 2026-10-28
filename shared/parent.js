@@ -1,9 +1,12 @@
 // Parent gate and parent panel (text is fine here: adults only)
-import { exportCode, importCode, defaultState } from './save.js';
-import { isMastered } from './mastery.js';
+import { exportCode, importCode, defaultState, saveState } from './save.js';
+import { isMastered, islandProgress } from './mastery.js';
 import { CHARACTERS } from './characters.js';
+import { buildIsland1Content } from './island1-content.js';
 
-const ROLES = ['엄마', '아빠', '할머니', '할아버지', '기타'];
+const ROLES = ['엄마', '아빠', '할머니', '할아버지', '외할머니', '외할아버지', '이모', '삼촌', '고모', '언니', '오빠', '누나', '형', '동생', '기타'];
+// island number -> content summary, so the parent sees n / total and what is left
+const ISLAND_CONTENT = { 1: p => { const c = buildIsland1Content(p); return { items: c.items, placeIds: c.placeIds }; } };
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 // Long-press the top-right 64px zone for 2s, then answer a simple addition.
@@ -45,9 +48,16 @@ function progressHtml(state) {
   const h = state.subjects.hangul;
   const ch = CHARACTERS.find(c => c.id === h.characterId);
   const rows = Object.entries(h.islands).sort((x, y) => Number(x[0]) - Number(y[0])).map(([n, isl]) => {
-    const items = Object.keys(isl.mastery);
+    const content = ISLAND_CONTENT[n] ? ISLAND_CONTENT[n](state.profile) : null;
+    const items = content ? content.items : Object.keys(isl.mastery);
     const mastered = items.filter(it => isMastered(isl, it));
-    return `<tr><td>${n}섬</td><td>${isl.cleared ? '완료' : '진행 중'}</td><td>${mastered.length}개 익힘 (${esc(mastered.join(', ')) || '-'})</td><td>${isl.days.length}일</td></tr>`;
+    const left = items.filter(it => !isMastered(isl, it)).map(it => {
+      const m = isl.mastery[it] || { count: 0, types: [] };
+      return `${esc(it)}(${m.count}회·놀이 ${m.types.length}종)`;
+    });
+    const pr = content ? islandProgress(isl, content.items, content.placeIds) : null;
+    const btn = isl.cleared ? '' : `<button class="pp-clear" data-n="${Number(n)}" style="border:none;background:#f3eef3;border-radius:8px;padding:4px 8px;font-size:13px">완료로 처리</button>`;
+    return `<tr><td>${Number(n)}섬</td><td>${isl.cleared ? '완료' : '진행 중'} ${btn}</td><td>${mastered.length}/${items.length} 익힘${left.length ? '<br><span style="color:#888;font-size:12px">남은 것: ' + left.join(', ') + '</span>' : ''}</td><td>${isl.days.length}일${pr && !pr.allVisited ? '<br><span style="color:#888;font-size:12px">안 간 장소 있음</span>' : ''}</td></tr>`;
   }).join('');
   return `<div>캐릭터: <b>${ch ? esc(ch.name) : '아직 없음'}</b> · ${h.stage + 1}단계 / 8단계</div>
     <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:14px"><tr style="color:#888"><td>섬</td><td>상태</td><td>익힌 글자</td><td>놀이한 날</td></tr>${rows || '<tr><td colspan="4">아직 기록 없음</td></tr>'}</table>`;
@@ -55,6 +65,8 @@ function progressHtml(state) {
 
 // onChange(newState) is called whenever the parent saves. firstRun hides reset/backup noise and requires a child name.
 export function openParentPanel(state, onChange, { firstRun = false } = {}) {
+  // saves mostly happen on island pages; try one now so the warning reflects reality
+  saveState(state);
   const ov = document.createElement('div');
   ov.className = 'overlay parent-panel';
   ov.style.cssText = 'background:rgba(60,40,60,.55);overflow:auto;-webkit-overflow-scrolling:touch';
@@ -109,6 +121,14 @@ export function openParentPanel(state, onChange, { firstRun = false } = {}) {
       const keep = { profile: state.profile, settings: state.settings };
       const fresh = defaultState();
       Object.keys(state).forEach(k => delete state[k]); Object.assign(state, fresh, keep);
+      onChange(state); ov.remove(); return;
+    }
+    if (t.closest('.pp-clear')) {
+      const n = String(Number(t.closest('.pp-clear').dataset.n));
+      if (!confirm(n + '섬을 완료로 처리할까요? 캐릭터가 한 단계 자라고 다음 섬이 열려요.')) return;
+      const h = state.subjects.hangul;
+      h.islands[n].cleared = true;
+      h.stage = Math.min(7, Math.max(h.stage, Number(n)));
       onChange(state); ov.remove(); return;
     }
     if (t.closest('.pp-close')) { ov.remove(); return; }

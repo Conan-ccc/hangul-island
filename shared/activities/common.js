@@ -36,10 +36,19 @@ export function unglow(root) { root.querySelectorAll('.glow').forEach(x => x.cla
 export function wiggle(e) { e.classList.remove('wiggle'); void e.offsetWidth; e.classList.add('wiggle'); }
 export function center(e) { const r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }
 
+// The child's character in the corner. Tapping it repeats the current prompt.
 export function buddy(ctx, style = 'left:2%;bottom:2%;width:min(18vw,24vh)') {
-  const b = el('div', `position:absolute;${style};pointer-events:none;z-index:3`, ctx.characterSvg, 'char buddy');
+  const b = el('div', `position:absolute;${style};z-index:3;cursor:pointer`, ctx.characterSvg, 'char buddy');
+  b.addEventListener('click', () => { wiggle(b); if (ctx.prompt) ask(ctx, ctx.prompt, ctx.promptTarget); });
   ctx.stage.appendChild(b);
   return b;
+}
+
+// Say a prompt; if speech is unavailable or fails, show the answer right away instead.
+export function ask(ctx, text, target) {
+  ctx.prompt = text;
+  ctx.promptTarget = target;
+  return Promise.resolve(ctx.speak(text)).then(ok => { if (ok === false && target && target.isConnected) glow(target); return ok; });
 }
 
 export function cheer(ctx, e) {

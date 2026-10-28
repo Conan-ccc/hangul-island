@@ -1,6 +1,6 @@
 // 글자 열매 따기: drag the named fruit into the basket
-import { makeDraggable } from '../drag.js';
-import { SCENES, shuffle, card, at, el, glow, unglow, cheer, buddy, wait } from './common.js';
+import { makeDraggable, lockAll } from '../drag.js';
+import { SCENES, shuffle, card, at, el, glow, unglow, cheer, buddy, wait, ask } from './common.js';
 
 const SPOTS = [[30, 22], [44, 14], [58, 22], [36, 40], [52, 38], [24, 36], [64, 36]];
 const BASKET = '<svg viewBox="0 0 120 90" width="100%"><path d="M8 30 h104 l-12 56 h-80Z" fill="#E8B04A"/><path d="M14 40 h92 M18 56 h84 M22 72 h76" stroke="#C98A3A" stroke-width="4"/><path d="M30 30 q30 -40 60 0" stroke="#C98A3A" stroke-width="6" fill="none"/></svg>';
@@ -22,7 +22,7 @@ export async function run(ctx, { targets, distractors, rounds = 4 }) {
       f.addEventListener('pointerdown', () => ctx.speak(t));
       return f;
     });
-    ctx.speak(ctx.phrase('pickFruit', { call: ctx.call, item: target }));
+    ask(ctx, ctx.phrase('pickFruit', { call: ctx.call, item: target }), fruits.find(x => x.dataset.text === target));
     let wrong = 0;
     await new Promise(done => {
       for (const f of fruits) {
@@ -31,7 +31,7 @@ export async function run(ctx, { targets, distractors, rounds = 4 }) {
           onDrop: tg => {
             if (!tg) return false;
             if (f.dataset.text === target) {
-              f.dataset.locked = '1';
+              lockAll(fruits);
               f.style.transition = 'all .4s'; f.style.left = '82%'; f.style.top = '74%'; f.style.transform = 'scale(.6)';
               cheer(ctx, basket);
               ctx.onSuccess(target, 'fruit'); results.push({ item: target, type: 'fruit' });

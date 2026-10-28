@@ -1,5 +1,5 @@
 // Offline cache. Bump VERSION together with shared/config.js on every release.
-const VERSION = '1.0.0';
+const VERSION = '1.0.1';
 const CACHE = 'hangul-island-' + VERSION;
 const ASSETS = [
   './',

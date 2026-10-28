@@ -1,5 +1,5 @@
 // 이름 바닷가: tap every card that shows the target name
-import { SCENES, shuffle, card, at, glow, unglow, wiggle, buddy, wait, center } from './common.js';
+import { SCENES, shuffle, card, at, glow, unglow, wiggle, buddy, wait, center, ask } from './common.js';
 
 export async function run(ctx, { target, decoys, count = 6 }) {
   ctx.stage.innerHTML = SCENES.beach;
@@ -15,7 +15,7 @@ export async function run(ctx, { target, decoys, count = 6 }) {
     ctx.stage.appendChild(c);
     return c;
   });
-  ctx.speak(ctx.phrase('findName', { item: target }));
+  ask(ctx, ctx.phrase('findName', { item: target }), cards.find(x => x.dataset.text === target));
   const results = [];
   let left = count, wrong = 0;
   await new Promise(done => {
