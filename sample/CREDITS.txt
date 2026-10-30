@@ -1,0 +1,1 @@
+CREDITS: sample/sfx = Kenney Interface Sounds (CC0, kenney.nl). sample/voice = Microsoft Edge neural TTS (ko-KR-SunHiNeural, ko-KR-InJoonNeural) via edge-tts.

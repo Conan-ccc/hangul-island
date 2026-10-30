@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>한글 섬 여행 - 2차 샘플</title>
+<style>
+* { box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+body { margin: 0; font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; background: #FFF5FA; color: #4A3A48; }
+header { padding: 14px 18px 6px; }
+header h1 { margin: 0; font-size: 20px; }
+header p { margin: 4px 0 0; font-size: 14px; color: #8a7a88; }
+.tabs { display: flex; gap: 8px; padding: 8px 18px; }
+.tabs button { border: none; border-radius: 14px; padding: 10px 16px; font-size: 16px; background: #fff; box-shadow: 0 3px 0 rgba(0,0,0,.07); }
+.tabs button.on { background: #FFC2D9; font-weight: 700; }
+section { display: none; padding: 6px 18px 24px; }
+section.on { display: block; }
+.note { font-size: 14px; color: #8a7a88; margin: 8px 0; line-height: 1.5; }
+
+/* scene 1: island */
+.scene { position: relative; width: min(100%, calc((100vh - 150px) * 1.6)); margin: 0 auto; aspect-ratio: 16/10; overflow: hidden; border-radius: 22px; box-shadow: 0 10px 30px rgba(80,40,80,.18); touch-action: none; background: #8fd6f2; }
+.bg { position: absolute; inset: -3%; background: url(img/island1.jpg) center/cover; animation: drift 24s ease-in-out infinite alternate; }
+@keyframes drift { from { transform: scale(1.02) translate(-1%, 0); } to { transform: scale(1.06) translate(1%, -1%); } }
+.cloud { position: absolute; width: 40%; height: 30%; border-radius: 50%; background: radial-gradient(closest-side, rgba(40,60,90,.18), transparent); filter: blur(6px); animation: cloud 28s linear infinite; pointer-events: none; }
+@keyframes cloud { from { transform: translateX(-60%); } to { transform: translateX(300%); } }
+.glints { position: absolute; inset: 0; pointer-events: none; }
+.glint { position: absolute; width: 10px; height: 10px; background: radial-gradient(circle, #fff 0 30%, rgba(255,255,255,0) 70%); animation: tw 2.4s ease-in-out infinite; }
+@keyframes tw { 0%,100% { opacity: 0; transform: scale(.4); } 50% { opacity: 1; transform: scale(1.3); } }
+.hero { position: absolute; width: 17%; left: 45%; top: 48%; transform: translate(-50%, -88%); transition: left 1.2s ease-in-out, top 1.2s ease-in-out; filter: drop-shadow(0 10px 8px rgba(60,40,60,.28)); z-index: 3; }
+.hero img { width: 100%; display: block; animation: breathe 2.6s ease-in-out infinite; transform-origin: 50% 95%; }
+@keyframes breathe { 0%,100% { transform: scale(1, 1); } 50% { transform: scale(1.025, .975); } }
+.hero.walk img { animation: hop .32s ease-in-out infinite; }
+@keyframes hop { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-9%) rotate(3deg); } }
+.hero.boing img { animation: boing .6s ease-out; }
+@keyframes boing { 0% { transform: scale(1); } 30% { transform: scale(1.18,.82); } 55% { transform: scale(.9,1.12); } 80% { transform: scale(1.05,.96); } 100% { transform: scale(1); } }
+.stagepick { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.stagepick button { border: none; border-radius: 12px; padding: 8px 12px; background: #fff; font-size: 14px; }
+.stagepick button.on { background: #FFE27A; }
+.heart { position: absolute; font-size: 26px; pointer-events: none; z-index: 5; animation: rise 1s ease-out forwards; }
+@keyframes rise { to { transform: translateY(-80px) scale(1.4); opacity: 0; } }
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.compare figure { margin: 0; background: #fff; border-radius: 16px; padding: 10px; text-align: center; font-size: 13px; color: #8a7a88; }
+.compare img { width: 100%; }
+
+/* scene 2: make a syllable */
+.play { position: relative; width: min(100%, calc((100vh - 150px) * 1.6)); margin: 0 auto; aspect-ratio: 16/10; border-radius: 22px; overflow: hidden; background: linear-gradient(#DFF3FF 0%, #F4FBFF 55%, #CFEFB0 56%, #B6E59A 100%); box-shadow: 0 10px 30px rgba(80,40,80,.18); touch-action: none; }
+.board { position: absolute; left: 50%; top: 5%; transform: translateX(-50%); display: flex; align-items: center; gap: 4%; background: rgba(255,255,255,.85); border-radius: 28px; padding: 1.5% 3%; box-shadow: 0 8px 20px rgba(80,60,100,.12); width: 62%; }
+.board img { width: 34%; filter: drop-shadow(0 6px 6px rgba(0,0,0,.15)); transition: transform 1.2s ease-in-out; }
+.word { font-size: clamp(40px, 8vw, 96px); font-weight: 800; letter-spacing: .06em; color: #C9B8D6; }
+.word b { color: #FF6FA5; }
+.slots { position: absolute; left: 50%; top: 60%; transform: translate(-50%, -50%); display: flex; gap: 2%; width: 28%; justify-content: center; }
+.slot { width: 46%; aspect-ratio: 1; border-radius: 22px; border: 5px dashed #C9A27A; background: rgba(255,255,255,.55); display: flex; align-items: center; justify-content: center; }
+.merged { position: absolute; left: 50%; top: 60%; transform: translate(-50%, -50%) scale(.3); font-size: clamp(70px, 14vw, 170px); font-weight: 800; color: #FF6FA5; text-shadow: 0 6px 0 #fff, 0 10px 18px rgba(255,111,165,.4); opacity: 0; transition: all .5s cubic-bezier(.3,1.6,.5,1); z-index: 6; }
+.merged.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.tray { position: absolute; left: 50%; bottom: 3%; transform: translateX(-50%); display: flex; gap: 4%; width: 70%; justify-content: center; }
+.hold { width: 16%; aspect-ratio: 1; position: relative; }
+.block { position: absolute; inset: 0; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: clamp(44px, 8vw, 100px); font-weight: 800; color: #fff; touch-action: none; cursor: grab;
+  background: linear-gradient(160deg, var(--c1), var(--c2)); box-shadow: inset 0 -8px 0 rgba(0,0,0,.12), inset 0 6px 0 rgba(255,255,255,.45), 0 10px 16px rgba(60,40,80,.22); text-shadow: 0 3px 0 rgba(0,0,0,.12); }
+.block.drag { transform: scale(1.12); z-index: 20; transition: none; }
+.block.back { transition: transform .3s ease-out; }
+.block.c { --c1: #8EC5FF; --c2: #5E9BDB; }
+.block.v { --c1: #FFB8D9; --c2: #F58FB4; }
+.sparkle { position: absolute; width: 16px; height: 16px; pointer-events: none; z-index: 7; background: radial-gradient(circle, #FFE27A 0 35%, transparent 70%); animation: pop .8s ease-out forwards; }
+@keyframes pop { to { transform: translate(var(--dx), var(--dy)) scale(.2); opacity: 0; } }
+.again { margin-top: 10px; border: none; border-radius: 12px; padding: 10px 16px; background: #fff; font-size: 15px; }
+
+/* scene 3: sound */
+.snd { background: #fff; border-radius: 18px; padding: 14px 16px; margin: 10px 0; }
+.snd h3 { margin: 0 0 8px; font-size: 16px; }
+.snd .row { display: flex; gap: 10px; flex-wrap: wrap; }
+.snd button { border: none; border-radius: 12px; padding: 10px 14px; font-size: 15px; background: #F3EEF3; }
+.snd button.new { background: #FFC2D9; }
+</style>
+</head>
+<body>
+<header>
+  <h1>한글 섬 여행 2차 샘플 (보호자 확인용)</h1>
+  <p>그림, 놀이, 소리를 바꾼 시안이에요. 아이패드에서 소리를 켜고 눌러 보세요.</p>
+</header>
+<div class="tabs">
+  <button data-t="s1" class="on">① 섬과 캐릭터</button>
+  <button data-t="s2">② 새 글자 놀이</button>
+  <button data-t="s3">③ 소리 비교</button>
+</div>
+
+<section id="s1" class="on">
+  <div class="scene" id="scene">
+    <div class="bg"></div>
+    <div class="cloud" style="top:8%;animation-delay:-6s"></div>
+    <div class="cloud" style="top:52%;animation-delay:-18s;animation-duration:36s"></div>
+    <div class="glints" id="glints"></div>
+    <div class="hero" id="hero"><img id="heroImg" src="img/cat-1.webp" alt=""></div>
+  </div>
+  <div class="stagepick" id="stagepick">
+    <button data-s="1" class="on">1단계 아기</button><button data-s="4">4단계</button><button data-s="8">8단계 최종</button>
+  </div>
+  <p class="note">땅을 누르면 걸어가고, 캐릭터를 누르면 통통 튀어요. 실제 게임에서는 캐릭터 10종 × 8단계를 모두 이런 입체 그림으로 다시 그리고, 섬마다 배경 그림을 따로 만들어요.</p>
+  <div class="compare">
+    <figure><img src="img/cat-8.webp" alt=""><figcaption>바뀐 그림 (입체 클레이 느낌)</figcaption></figure>
+    <figure><svg id="oldcat" viewBox="-14 -14 148 152" style="width:100%;overflow:visible"></svg><figcaption>지금 그림</figcaption></figure>
+  </div>
+</section>
+
+<section id="s2">
+  <div class="play" id="play">
+    <div class="board"><img id="nabi" src="img/nabi.webp" alt=""><div class="word"><b>나</b>비</div></div>
+    <div class="slots"><div class="slot" data-want="ㄴ"></div><div class="slot" data-want="ㅏ"></div></div>
+    <div class="merged" id="merged">나</div>
+    <div class="tray" id="tray"></div>
+  </div>
+  <button class="again" id="again">처음부터 다시</button>
+  <p class="note">글자가 늘 화면에 보여요(나비 그림 + "나비" 글자). 블록을 누르면 그 글자 이름을 들려주고, ㄴ과 ㅏ를 칸에 끌어 넣으면 "나"로 합쳐져요. 소리가 안 나와도 화면만 보고 할 수 있어요.</p>
+</section>
+
+<section id="s3">
+  <div class="snd"><h3>안내 목소리</h3>
+    <div class="row">
+      <button data-tts="나비 열매를 바구니에 넣어볼까?">지금 목소리 (아이패드 기본)</button>
+      <button class="new" data-v="compare">새 목소리 A (무료 AI, 여자)</button>
+      <button class="new" data-v="compare_m">새 목소리 B (무료 AI, 남자)</button>
+    </div></div>
+  <div class="snd"><h3>글자 소리</h3>
+    <div class="row">
+      <button data-tts="니은, 나">지금: 니은, 나</button>
+      <button class="new" data-v="nieun">새: 니은</button><button class="new" data-v="na">새: 나</button><button class="new" data-v="na_nabi">새: 나! 나비의 나!</button>
+    </div></div>
+  <div class="snd"><h3>효과음</h3>
+    <div class="row">
+      <button data-old="pop">지금: 뽁</button><button class="new" data-s="pop">새: 뽁</button>
+      <button data-old="sparkle">지금: 반짝</button><button class="new" data-s="sparkle">새: 반짝</button>
+      <button data-old="fanfare">지금: 성공</button><button class="new" data-s="success">새: 성공</button>
+    </div></div>
+  <p class="note">새 목소리는 무료 AI 음성으로 미리 만든 소리 파일이라 인터넷 없이도 나와요. 아이 이름 부르는 말만 아이패드 기본 목소리로 하거나, 이름 없이 "안녕!"처럼 부르게 바꿀 수 있어요.</p>
+</section>
+
+<script type="module">
+import { drawCharacter } from '../shared/characters.js';
+import { playSfx, unlockAudio } from '../shared/fx.js';
+
+// ---- audio: decoded buffers through Web Audio (works offline, low latency on iPad)
+const AC = window.AudioContext || window.webkitAudioContext;
+const ac = AC ? new AC() : null;
+const buf = {};
+async function load(url) { if (!ac) return null; if (!buf[url]) buf[url] = fetch(url).then(r => r.arrayBuffer()).then(b => ac.decodeAudioData(b)); return buf[url]; }
+let current = null;
+async function play(url, { voice = false } = {}) {
+  if (!ac) return; if (ac.state === 'suspended') await ac.resume();
+  const b = await load(url); if (!b) return;
+  if (voice && current) { try { current.stop(); } catch {} }
+  const s = ac.createBufferSource(); s.buffer = b; s.connect(ac.destination); s.start();
+  if (voice) current = s;
+  return new Promise(r => { s.onended = r; });
+}
+const voice = n => play(`voice/${n}.mp3`, { voice: true });
+const sfx = n => play(`sfx/${n}.mp3`);
+['pop','snap','sparkle','success','boing','whoosh'].forEach(n => load(`sfx/${n}.mp3`));
+document.addEventListener('pointerdown', () => { if (ac && ac.state === 'suspended') ac.resume(); unlockAudio(); }, { once: true });
+function tts(text) { const s = window.speechSynthesis; if (!s) return; s.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'ko-KR'; u.rate = .85; u.pitch = 1.1; s.speak(u); }
+
+// ---- tabs
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === b.dataset.t));
+  if (b.dataset.t === 's2') startPlay();
+});
+
+// ---- scene 1
+document.getElementById('oldcat').outerHTML = drawCharacter('cat', 7).replace('<svg ', '<svg style="width:100%;overflow:visible" ');
+const glints = document.getElementById('glints');
+for (let i = 0; i < 18; i++) { const g = document.createElement('div'); g.className = 'glint'; g.style.left = (Math.random() * 100) + '%'; g.style.top = (Math.random() < .5 ? Math.random() * 20 : 70 + Math.random() * 28) + '%'; g.style.animationDelay = (-Math.random() * 2.4) + 's'; glints.appendChild(g); }
+const scene = document.getElementById('scene'), hero = document.getElementById('hero'), heroImg = document.getElementById('heroImg');
+let walking = false;
+scene.addEventListener('pointerdown', e => {
+  const r = scene.getBoundingClientRect();
+  if (hero.contains(e.target)) {
+    hero.classList.remove('boing'); void hero.offsetWidth; hero.classList.add('boing'); sfx('boing');
+    const h = document.createElement('div'); h.className = 'heart'; h.textContent = '♥'; h.style.color = '#FF6FA5';
+    h.style.left = (e.clientX - r.left) + 'px'; h.style.top = (e.clientY - r.top - 20) + 'px'; scene.appendChild(h); setTimeout(() => h.remove(), 1000);
+    return;
+  }
+  if (walking) return;
+  walking = true; hero.classList.add('walk'); sfx('pop');
+  hero.style.left = ((e.clientX - r.left) / r.width * 100) + '%';
+  hero.style.top = ((e.clientY - r.top) / r.height * 100) + '%';
+  setTimeout(() => { hero.classList.remove('walk'); walking = false; }, 1250);
+});
+document.getElementById('stagepick').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#stagepick button').forEach(x => x.classList.toggle('on', x === b));
+  heroImg.src = `img/cat-${b.dataset.s}.webp`; hero.style.width = ({ 1: '15%', 4: '17%', 8: '24%' })[b.dataset.s];
+  sfx('sparkle');
+});
+
+// ---- scene 2
+const play2 = document.getElementById('play'), tray = document.getElementById('tray'), merged = document.getElementById('merged');
+const NAMES = { 'ㄴ': 'nieun', 'ㅏ': 'a' };
+let started = false, filled = 0;
+function burst(x, y) { const r = play2.getBoundingClientRect(); for (let i = 0; i < 12; i++) { const s = document.createElement('div'); s.className = 'sparkle'; const a = i / 12 * Math.PI * 2; s.style.left = (x - r.left) + 'px'; s.style.top = (y - r.top) + 'px'; s.style.setProperty('--dx', Math.cos(a) * 90 + 'px'); s.style.setProperty('--dy', Math.sin(a) * 90 + 'px'); play2.appendChild(s); setTimeout(() => s.remove(), 800); } }
+function startPlay() {
+  filled = 0; merged.classList.remove('show'); document.getElementById('nabi').style.transform = '';
+  document.querySelectorAll('.slot').forEach(s => { s.innerHTML = ''; s.style.opacity = 1; });
+  tray.innerHTML = '';
+  for (const [t, k] of [['ㅏ', 'v'], ['ㄷ', 'c'], ['ㄴ', 'c'], ['ㅗ', 'v']]) {
+    const hold = document.createElement('div'); hold.className = 'hold';
+    const b = document.createElement('div'); b.className = 'block ' + k; b.textContent = t; b.dataset.t = t;
+    hold.appendChild(b); tray.appendChild(hold); drag(b);
+  }
+  if (!started) { started = true; setTimeout(() => voice('combine'), 300); } else voice('combine');
+}
+document.getElementById('again').onclick = startPlay;
+function drag(b) {
+  let pid = null, sx = 0, sy = 0, moved = 0;
+  b.addEventListener('pointerdown', e => { if (pid !== null || b.dataset.done) return; pid = e.pointerId; sx = e.clientX; sy = e.clientY; moved = 0; b.setPointerCapture(pid); b.classList.remove('back'); b.classList.add('drag'); sfx('pop'); });
+  b.addEventListener('pointermove', e => { if (e.pointerId !== pid) return; moved = Math.hypot(e.clientX - sx, e.clientY - sy); b.style.transform = `translate(${e.clientX - sx}px,${e.clientY - sy}px) scale(1.12)`; });
+  const up = e => {
+    if (e.pointerId !== pid) return; pid = null; b.classList.remove('drag');
+    if (moved < 10) { b.style.transform = ''; NAMES[b.dataset.t] ? voice(NAMES[b.dataset.t]) : tts(b.dataset.t === 'ㄷ' ? '디귿' : '오'); return; }
+    const slot = [...document.querySelectorAll('.slot')].find(s => { const r = s.getBoundingClientRect(); return e.clientX > r.left - 30 && e.clientX < r.right + 30 && e.clientY > r.top - 30 && e.clientY < r.bottom + 30; });
+    if (slot && !slot.firstChild && slot.dataset.want === b.dataset.t) {
+      b.dataset.done = '1'; b.style.transform = ''; b.style.position = 'relative'; b.style.width = '100%'; b.style.height = '100%'; slot.appendChild(b);
+      sfx('snap'); voice(NAMES[b.dataset.t]); filled++;
+      if (filled === 2) finish();
+    } else { b.classList.add('back'); b.style.transform = ''; sfx('boing'); }
+  };
+  b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up);
+}
+async function finish() {
+  await new Promise(r => setTimeout(r, 900));
+  document.querySelectorAll('.slot').forEach(s => s.style.opacity = 0);
+  merged.classList.add('show'); sfx('success');
+  const r = merged.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2);
+  await voice('na_nabi');
+  document.getElementById('nabi').style.transform = 'translate(40%, -10%) rotate(12deg) scale(1.1)';
+  await voice('great');
+}
+
+// ---- scene 3
+document.getElementById('s3').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.tts) tts(b.dataset.tts);
+  if (b.dataset.v) voice(b.dataset.v);
+  if (b.dataset.s) sfx(b.dataset.s);
+  if (b.dataset.old) playSfx(b.dataset.old);
+});
+</script>
+</body>
+</html>
