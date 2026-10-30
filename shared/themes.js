@@ -18,9 +18,39 @@ const generic = (n, name) => ({
 });
 
 export const THEMES = {
-  1: generic(1, '농장 동물 섬'),
-  2: generic(2, '곤충 섬'),
-  3: generic(3, '바다 섬'),
+  1: {
+    n: 1, name: '농장 동물 섬', music: 'music/island1.mp3', map: 'theme/1/map.jpg', spots: 'theme/1/map.json',
+    places: [
+      { id: 'henhouse', mech: 'fruit', skin: { bg: 'theme/1/act-henhouse.jpg', item: 'theme/1/egg.webp', target: 'theme/1/basket.webp' } },
+      { id: 'pond', mech: 'rise', skin: { bg: 'theme/1/act-pond.jpg', dir: 'rise' } },
+      { id: 'barn', mech: 'gift', skin: { bg: 'theme/1/act-barn.jpg', friends: ['theme/1/friend-cow.webp', 'theme/1/friend-pig.webp', 'theme/1/friend-lamb.webp'] } },
+      { id: 'field', mech: 'find', skin: { bg: 'theme/1/act-field.jpg', item: 'theme/1/sprout.webp', open: 'theme/1/carrot.webp' } },
+      { id: 'gate', mech: 'door', skin: { bg: 'theme/1/act-gate.jpg' } },
+      { id: 'windmill', mech: 'bridge', skin: { bg: 'theme/1/act-windmill.jpg' } },
+    ],
+  },
+  2: {
+    n: 2, name: '곤충 섬', music: 'music/island2.mp3', map: 'theme/2/map.jpg', spots: 'theme/2/map.json',
+    places: [
+      { id: 'flowers', mech: 'rise', skin: { bg: 'theme/2/act-flowers.jpg', item: 'theme/2/butterfly.webp', dir: 'rise' } },
+      { id: 'bud', mech: 'find', skin: { bg: 'theme/2/act-bud.jpg', item: 'theme/2/bud.webp', open: 'theme/2/bloom.webp', reveal: ['theme/2/ladybug.webp', 'theme/2/bee.webp', 'theme/2/caterpillar.webp'] } },
+      { id: 'hive', mech: 'fruit', skin: { bg: 'theme/2/act-hive.jpg', item: 'theme/2/honey.webp', target: 'theme/2/honeypot.webp' } },
+      { id: 'web', mech: 'pairs', skin: { bg: 'theme/2/act-web.jpg', back: 'theme/2/leaf-card.webp' } },
+      { id: 'log', mech: 'door', skin: { bg: 'theme/2/act-log.jpg' } },
+      { id: 'pond', mech: 'bridge', skin: { bg: 'theme/2/act-pond.jpg' } },
+    ],
+  },
+  3: {
+    n: 3, name: '바다 섬', music: 'music/island3.mp3', map: 'theme/3/map.jpg', spots: 'theme/3/map.json',
+    places: [
+      { id: 'shore', mech: 'fruit', skin: { bg: 'theme/3/act-shore.jpg', item: 'theme/3/shell.webp', target: 'theme/3/bucket.webp' } },
+      { id: 'reef', mech: 'rise', skin: { bg: 'theme/3/act-reef.jpg', dir: 'rise' } },
+      { id: 'clams', mech: 'find', skin: { bg: 'theme/3/act-clams.jpg', item: 'theme/3/clam.webp', open: 'theme/3/clam-open.webp' } },
+      { id: 'dock', mech: 'gift', skin: { bg: 'theme/3/act-dock.jpg', friends: ['theme/3/friend-crab.webp', 'theme/3/friend-octopus.webp', 'theme/3/friend-turtle.webp'] } },
+      { id: 'lighthouse', mech: 'door', skin: { bg: 'theme/3/act-lighthouse.jpg' } },
+      { id: 'boat', mech: 'bridge', skin: { bg: 'theme/3/act-boat.jpg' } },
+    ],
+  },
   4: generic(4, '과일 섬'),
   5: {
     n: 5, name: '공룡 섬', music: 'music/island5.mp3', map: 'theme/5/map.jpg', spots: 'theme/5/map.json',

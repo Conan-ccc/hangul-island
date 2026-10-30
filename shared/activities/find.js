@@ -14,7 +14,7 @@ export async function run(ctx, { target, decoys, count = 5, word, pic }) {
     const cy = 50 + Math.floor(i / cols) * (36 / rows) + (ctx.rng() - 0.5) * 5;
     const skin = ctx.skin || {};
     const c = skin.item
-      ? at(el('div', `position:absolute;width:118px;height:140px;display:flex;align-items:center;justify-content:center;background:url(${asset(skin.item)}) center/contain no-repeat;filter:drop-shadow(0 8px 6px rgba(80,50,30,.25));font-size:${t.length >= 3 ? 30 : 44}px;font-weight:800;color:#4A3A48;text-shadow:0 0 6px #fff,0 0 10px #fff;cursor:pointer;transition:all .5s;z-index:3;padding-top:14px`, '', 'item'), cx, cy)
+      ? at(el('div', `position:absolute;width:150px;height:170px;display:flex;align-items:center;justify-content:center;background:url(${asset(skin.item)}) center/contain no-repeat;filter:drop-shadow(0 8px 6px rgba(80,50,30,.25));font-size:${t.length >= 3 ? 34 : 52}px;font-weight:800;color:#4A3A48;text-shadow:0 0 6px #fff,0 0 10px #fff,0 0 14px #fff;cursor:pointer;transition:all .5s;z-index:3;padding-top:14px`, '', 'item'), cx, cy)
       : at(el('div', `position:absolute;min-width:110px;height:110px;padding:0 12px;display:flex;align-items:center;justify-content:center;border-radius:50% 50% 44% 44%;background:radial-gradient(circle at 40% 30%,#fff 0,#FFE3EC 60%,#F7C4D4 100%);box-shadow:0 8px 12px rgba(120,80,60,.25);font-size:${t.length >= 3 ? 34 : 48}px;font-weight:800;color:#4A3A48;cursor:pointer;transition:all .5s;z-index:3`, '', 'card'), cx, cy);
     c.textContent = t; c.dataset.text = t;
     c.style.rotate = ((ctx.rng() - 0.5) * 16).toFixed(1) + 'deg';

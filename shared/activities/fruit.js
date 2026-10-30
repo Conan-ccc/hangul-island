@@ -1,13 +1,14 @@
 // 글자 열매 따기: the board shows the letter + picture; drag the matching fruit into the basket
 import { makeDraggable, lockAll } from '../drag.js';
-import { scene, shuffle, at, el, glow, unglow, cheer, buddy, wait, ask, board, picUrl, praise, progress } from './common.js';
+import { scene, shuffle, at, el, glow, unglow, cheer, buddy, wait, ask, board, picUrl, praise, progress, asset } from './common.js';
 
 const SPOTS = [[24, 40], [38, 30], [52, 38], [33, 52], [47, 55], [60, 47]];
 
 export async function run(ctx, { rounds }) {
   scene(ctx, 'tree');
   buddy(ctx);
-  const basket = at(el('div', 'position:absolute;width:min(20vw,27vh);z-index:3', `<img class="picimg" src="${picUrl('basket')}" alt="">`, 'basket'), 82, 76);
+  const skin = ctx.skin || {};
+  const basket = at(el('div', 'position:absolute;width:min(20vw,27vh);z-index:3', `<img class="picimg" src="${skin.target ? asset(skin.target) : picUrl('basket')}" alt="">`, 'basket'), 82, 76);
   ctx.stage.appendChild(basket);
   const results = [];
   const tick = progress(ctx, rounds.length);
@@ -17,9 +18,11 @@ export async function run(ctx, { rounds }) {
     const spots = shuffle(SPOTS, ctx.rng);
     const fruits = r.options.map((t, i) => {
       const size = t.length >= 3 ? 150 : t.length === 2 ? 128 : 108;
-      const f = at(el('div', `position:absolute;width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:${t.length >= 2 ? 40 : 58}px;font-weight:800;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.15);background:radial-gradient(circle at 35% 30%,#FFC1CC 0,#FF7F96 55%,#E85A75 100%);box-shadow:inset 0 -8px 0 rgba(0,0,0,.1),0 8px 14px rgba(120,40,60,.3);z-index:3`, '', 'fruit'), spots[i][0], spots[i][1] + 4);
+      const f = skin.item
+        ? at(el('div', `position:absolute;width:${size + 40}px;height:${size + 50}px;display:flex;align-items:center;justify-content:center;background:url(${asset(skin.item)}) center/contain no-repeat;filter:drop-shadow(0 8px 8px rgba(80,40,30,.25));font-size:${t.length >= 2 ? 38 : 56}px;font-weight:800;color:#4A3A48;text-shadow:0 0 6px #fff,0 0 12px #fff,0 0 16px #fff;z-index:3`, '', 'fruit'), spots[i][0], spots[i][1] + 4)
+        : at(el('div', `position:absolute;width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:${t.length >= 2 ? 40 : 58}px;font-weight:800;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.15);background:radial-gradient(circle at 35% 30%,#FFC1CC 0,#FF7F96 55%,#E85A75 100%);box-shadow:inset 0 -8px 0 rgba(0,0,0,.1),0 8px 14px rgba(120,40,60,.3);z-index:3`, '', 'fruit'), spots[i][0], spots[i][1] + 4);
       f.textContent = t; f.dataset.text = t;
-      f.insertAdjacentHTML('beforeend', '<span style="position:absolute;top:-10px;left:50%;width:16px;height:22px;background:#5DBB6A;border-radius:0 80% 0 80%;transform:translateX(-50%) rotate(-20deg)"></span>');
+      if (!skin.item) f.insertAdjacentHTML('beforeend', '<span style="position:absolute;top:-10px;left:50%;width:16px;height:22px;background:#5DBB6A;border-radius:0 80% 0 80%;transform:translateX(-50%) rotate(-20deg)"></span>');
       ctx.stage.appendChild(f);
       f.addEventListener('pointerdown', () => ctx.speak(t));
       return f;

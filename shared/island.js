@@ -108,7 +108,9 @@ export async function startIsland(n) {
           return `<div class="place" data-id="${p.id}" style="position:absolute;left:${x}%;top:${y}%;width:15%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;cursor:pointer">
             ${need > 0 ? '<div class="ring"></div>' : ''}
             <div style="position:absolute;right:4%;top:2%;pointer-events:none" class="${need > 0 ? 'tw' : ''}">${need > 0 ? SPARK : CHECK}</div>
-            ${showBest && p.id === best.id ? `<div class="arrow" style="position:absolute;left:50%;top:-38%;translate:-50% 0;pointer-events:none">${ARROW}</div>` : ''}</div>`;
+            ${showBest && p.id === best.id ? (y < 30
+              ? `<div class="arrow" style="position:absolute;left:50%;bottom:-48%;translate:-50% 0;pointer-events:none"><div style="rotate:180deg">${ARROW}</div></div>`
+              : `<div class="arrow" style="position:absolute;left:50%;top:-38%;translate:-50% 0;pointer-events:none">${ARROW}</div>`) : ''}</div>`;
         }).join('')}
         <div class="walker" style="position:absolute;width:9%;left:${spots.start[0]}%;top:${spots.start[1]}%;translate:-50% -88%;z-index:5">${charHtml(H.characterId, H.stage, { decoration: H.wearing })}</div>
       </div>
