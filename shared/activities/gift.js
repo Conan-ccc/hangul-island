@@ -1,6 +1,6 @@
 // 동물 친구 선물: a friend shows a picture (or asks for a family member); give the matching word card
 import { makeDraggable, lockAll } from '../drag.js';
-import { scene, shuffle, at, el, glow, unglow, cheer, buddy, wait, ask, picUrl, praise } from './common.js';
+import { scene, shuffle, at, el, glow, unglow, cheer, buddy, wait, ask, picUrl, praise, progress, asset } from './common.js';
 
 const FRIENDS = ['friend-rabbit', 'friend-bear', 'friend-duck', 'friend-bird'];
 
@@ -8,9 +8,11 @@ export async function run(ctx, { rounds }) {
   scene(ctx, 'village');
   buddy(ctx);
   const results = [];
+  const tick = progress(ctx, rounds.length);
+  const friendSrc = i => ctx.skin?.friends ? asset(ctx.skin.friends[i % ctx.skin.friends.length]) : picUrl(FRIENDS[i % FRIENDS.length]);
   for (let i = 0; i < rounds.length; i++) {
     const r = rounds[i];
-    const friend = at(el('div', 'position:absolute;width:min(22vw,32vh);z-index:3', `<img class="picimg" src="${picUrl(FRIENDS[i % FRIENDS.length])}" alt="">`, 'animal'), 64, 62);
+    const friend = at(el('div', 'position:absolute;width:min(22vw,32vh);z-index:3', `<img class="picimg" src="${friendSrc(i)}" alt="">`, 'animal'), 64, 62);
     const bubble = at(el('div', 'position:absolute;background:#fff;border-radius:30px;padding:12px 18px;box-shadow:0 8px 18px rgba(80,60,100,.18);z-index:4;min-width:120px;text-align:center',
       r.pic ? `<img src="${picUrl(r.pic)}" alt="" style="height:min(20vh,16vw);display:block">` : '<svg viewBox="-10 -2 20 18" width="70" height="64"><path d="M0 4 C-6 -2 -12 2 -8 8 L0 15 L8 8 C12 2 6 -2 0 4Z" fill="#FF8FB1"/></svg>'), 64, 22);
     ctx.stage.append(friend, bubble);
@@ -42,7 +44,7 @@ export async function run(ctx, { rounds }) {
             friend.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-30px)' }, { transform: 'translateY(0)' }], { duration: 500, iterations: 2 });
             cheer(ctx, friend);
             for (const it of [r.answer, ...(r.credit || [])]) { ctx.onSuccess(it, 'gift'); results.push({ item: it, type: 'gift' }); }
-            setTimeout(done, 900);
+            tick(); setTimeout(done, 900);
             return true;
           }
           wrong += 1;

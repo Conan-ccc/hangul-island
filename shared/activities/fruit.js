@@ -1,6 +1,6 @@
 // 글자 열매 따기: the board shows the letter + picture; drag the matching fruit into the basket
 import { makeDraggable, lockAll } from '../drag.js';
-import { scene, shuffle, at, el, glow, unglow, cheer, buddy, wait, ask, board, picUrl, praise } from './common.js';
+import { scene, shuffle, at, el, glow, unglow, cheer, buddy, wait, ask, board, picUrl, praise, progress } from './common.js';
 
 const SPOTS = [[24, 40], [38, 30], [52, 38], [33, 52], [47, 55], [60, 47]];
 
@@ -10,6 +10,7 @@ export async function run(ctx, { rounds }) {
   const basket = at(el('div', 'position:absolute;width:min(20vw,27vh);z-index:3', `<img class="picimg" src="${picUrl('basket')}" alt="">`, 'basket'), 82, 76);
   ctx.stage.appendChild(basket);
   const results = [];
+  const tick = progress(ctx, rounds.length);
   for (const r of rounds) {
     board(ctx, { pic: r.pic, word: r.word, target: r.target });
     ctx.boardLine = r.line;
@@ -34,7 +35,7 @@ export async function run(ctx, { rounds }) {
             lockAll(fruits);
             f.style.transition = 'left .4s, top .4s, transform .4s'; f.style.left = '82%'; f.style.top = '72%'; f.style.transform = 'scale(.5)';
             cheer(ctx, basket);
-            ctx.onSuccess(r.target, 'fruit'); results.push({ item: r.target, type: 'fruit' });
+            ctx.onSuccess(r.target, 'fruit'); results.push({ item: r.target, type: 'fruit' }); tick();
             setTimeout(done, 500);
             return true;
           }

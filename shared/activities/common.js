@@ -26,7 +26,18 @@ export const isVowelJamo = j => /[ㅏ-ㅣ]/.test(j);
 // Scene background (illustration) with a slow drift
 export function scene(ctx, name) {
   ctx.stage.innerHTML = '';
-  ctx.stage.appendChild(el('div', `background-image:url(${asset('bg/act-' + name + '.jpg')})`, '', 'scene-bg'));
+  const bg = ctx.skin?.bg ? asset(ctx.skin.bg) : asset('bg/act-' + name + '.jpg');
+  ctx.stage.appendChild(el('div', `background-image:url(${bg})`, '', 'scene-bg'));
+}
+
+// Round progress: a row of dots at the top right that fill as rounds finish (the child sees how much is left)
+export function progress(ctx, total) {
+  ctx.stage.querySelector('.rounds')?.remove();
+  const box = el('div', 'position:absolute;top:18px;right:18px;display:flex;gap:10px;z-index:8;background:rgba(255,255,255,.75);padding:8px 12px;border-radius:20px', '', 'rounds');
+  const dots = Array.from({ length: total }, () => { const d = el('div', 'width:26px;height:26px;border-radius:50%;background:#E9DDF0;box-shadow:inset 0 2px 0 rgba(0,0,0,.08);transition:all .4s'); box.appendChild(d); return d; });
+  ctx.stage.appendChild(box);
+  let i = 0;
+  return () => { const d = dots[i++]; if (d) { d.style.background = 'radial-gradient(circle at 35% 30%,#FFF3A8,#FFC93C)'; d.style.transform = 'scale(1.25)'; setTimeout(() => { d.style.transform = 'scale(1)'; }, 300); } };
 }
 
 // The child's character in the corner. Tapping it repeats the current prompt.

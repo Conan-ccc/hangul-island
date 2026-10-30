@@ -48,10 +48,10 @@ export function playSfx(name) {
 }
 
 let musicSrc = null, musicName = null;
-export function playMusic(name = 'happy') {
+export function playMusic(name = 'music/home.mp3') {
   const c = audioContext(); if (!c || musicName === name) return;
   musicName = name;
-  load(`music/${name}.mp3`).then(buf => {
+  load(name.includes('/') ? name : `music/${name}.mp3`).then(buf => {
     if (musicName !== name) return;
     if (musicSrc) { try { musicSrc.stop(); } catch { /* ignore */ } }
     const s = c.createBufferSource(); s.buffer = buf; s.loop = true; s.connect(musicGain); s.start(); musicSrc = s;

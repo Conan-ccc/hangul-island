@@ -1,12 +1,13 @@
 // 다리/공방: build a syllable from jamo blocks (mode 'build') or a word from syllable blocks (mode 'words')
 import { makeDraggable, lockAll, settle } from '../drag.js';
 import { compose, jamoName } from '../hangul.js';
-import { scene, shuffle, el, glow, unglow, cheer, buddy, wait, ask, board, praise, jblock, center } from './common.js';
+import { scene, shuffle, el, glow, unglow, cheer, buddy, wait, ask, board, praise, jblock, center, progress } from './common.js';
 
 export async function run(ctx, { mode, rounds }) {
   scene(ctx, mode === 'build' ? 'workshop' : 'river');
   const pal = buddy(ctx);
   const results = [];
+  const tick = progress(ctx, rounds.length);
   for (const r of rounds) {
     const pieces = mode === 'build' ? r.parts : r.blocks;
     const target = mode === 'build' ? r.target : r.word;
@@ -59,7 +60,7 @@ export async function run(ctx, { mode, rounds }) {
     requestAnimationFrame(() => { merged.style.transform = 'scale(1)'; merged.style.opacity = '1'; });
     ctx.sfx('success');
     const [x, y] = center(row); ctx.burst(x, y, 'stars');
-    ctx.onSuccess(target, 'bridge'); results.push({ item: target, type: 'bridge' });
+    ctx.onSuccess(target, 'bridge'); results.push({ item: target, type: 'bridge' }); tick();
     await ctx.speak(r.line || target);
     if (mode !== 'build') { pal.style.transition = 'left 2s ease-in-out'; pal.style.left = '78%'; await wait(1200); }
     await praise(ctx);

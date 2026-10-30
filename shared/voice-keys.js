@@ -15,7 +15,8 @@ export const LINES = {
   locked: '아직 갈 수 없어', soon: '곧 열려!', cleared: '섬을 다 깼어! 우리 친구가 자란대!',
   giftBox: '선물상자를 톡톡 눌러볼까?', present: '선물이야!', love: '사랑해!',
   bagEmpty: '놀이를 하면 선물을 받을 수 있어!', roomEmpty: '다 자란 친구들이 여기서 쉬어요',
-  findMyName: '내 이름을 찾아줄래?', thisName: '이 이름을 찾아줄래?', welcome: '섬에 왔어! 가고 싶은 곳을 눌러볼까?',
+  findMyName: '내 이름을 찾아줄래?', thisName: '이 이름을 찾아줄래?', welcome: '섬에 왔어! 반짝이는 곳을 눌러볼까?',
+  pairs: '같은 짝을 찾아볼까?', nextHere: '여기로 가볼까?', allDone: '이 섬은 다 했어! 다른 섬에도 가볼까?',
 };
 
 // Endings spoken after an item clip: "나" + "열매를 따볼까?"

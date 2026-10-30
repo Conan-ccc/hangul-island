@@ -1,12 +1,13 @@
 // 따라 쓰기 문: trace the letter on the door to open it
 import { createTracer } from '../trace.js';
 import { jamoName } from '../hangul.js';
-import { scene, el, cheer, buddy, wait, board, praise } from './common.js';
+import { scene, el, cheer, buddy, wait, board, praise, progress } from './common.js';
 
 export async function run(ctx, { keys, unitOf = {}, guideOpacity = 0.5 }) {
   scene(ctx, 'door');
   buddy(ctx);
   const results = [];
+  const tick = progress(ctx, keys.length);
   for (const key of keys) {
     const isJamo = !/[가-힣]/.test(key);
     board(ctx, { big: key });
@@ -18,7 +19,7 @@ export async function run(ctx, { keys, unitOf = {}, guideOpacity = 0.5 }) {
     ctx.speak(ctx.prompt);
     let tracer;
     await new Promise(done => { tracer = createTracer(pad, key, { guideOpacity, onComplete: done }); });
-    cheer(ctx, pad);
+    cheer(ctx, pad); tick();
     if (unitOf[key]) { ctx.onSuccess(unitOf[key], 'trace'); results.push({ item: unitOf[key], type: 'trace' }); }
     await ctx.speak(ctx.boardLine);
     await praise(ctx);

@@ -8,6 +8,9 @@ import { attachPetting } from './pet.js';
 import { installParentGate, openParentPanel } from './parent.js';
 import { playEvolution } from './evolve.js';
 import { LINES } from './voice-keys.js';
+import { HOME_MUSIC } from './themes.js';
+import { islandUnits } from './island-content.js';
+import { isMastered } from './mastery.js';
 
 const state = loadState();
 const app = document.getElementById('app');
@@ -21,10 +24,13 @@ applySound();
 let ISL = [[18, 77], [35, 63], [46, 49], [66, 44], [57, 26], [80, 31], [76, 17], [89, 12]];
 const mapReady = fetch(ASSETS + 'bg/home.json').then(r => r.json()).then(j => { if (j.islands?.length === 8) ISL = j.islands; }).catch(() => {});
 
-function islandOpen(n) {
-  if (n === 1) return true;
-  const prev = H().islands[String(n - 1)];
-  return !!(prev && prev.cleared);
+// every island is open from the start (user decision 2026-10-30); clearing still grows the character
+function islandOpen() { return true; }
+function islandDone(n) {
+  const isl = H().islands[String(n)];
+  const units = islandUnits(n, state.profile);
+  const done = isl ? units.filter(u => isMastered(isl, u)).length : 0;
+  return { done, total: units.length, cleared: !!isl?.cleared };
 }
 
 const PLAY_ICON = '<svg viewBox="0 0 100 100" width="160" height="160"><defs><radialGradient id="pg" cx="35%" cy="30%"><stop offset="0" stop-color="#FFC9DE"/><stop offset="1" stop-color="#FF6FA5"/></radialGradient></defs><circle cx="50" cy="52" r="44" fill="#E05A8C"/><circle cx="50" cy="48" r="44" fill="url(#pg)"/><circle cx="50" cy="48" r="44" fill="none" stroke="#fff" stroke-width="4"/><path d="M41 30 L71 48 L41 66Z" fill="#fff"/></svg>';
@@ -41,9 +47,10 @@ function renderHome() {
   app.innerHTML = `<div class="hmap" style="position:absolute;left:50%;top:50%;width:max(100vw,160vh);height:max(62.5vw,100vh);translate:-50% -50%;overflow:hidden">
       <div class="scene-bg" style="background-image:url(${ASSETS}bg/home.jpg);animation-duration:40s"></div>
       <div class="cloudshade" style="top:10%"></div><div class="cloudshade" style="top:55%;animation-delay:-14s;animation-duration:42s"></div>
-      ${nums.map(n => { const [x, y] = ISL[n - 1]; const open = islandOpen(n), done = !!H().islands[String(n)]?.cleared;
+      ${nums.map(n => { const [x, y] = ISL[n - 1]; const prog = islandDone(n), done = prog.cleared;
         return `<div class="island" data-n="${n}" style="position:absolute;left:${x}%;top:${y}%;width:11%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center">
-          ${!open ? LOCK : done ? FLAG : '<div class="glint" style="position:relative;width:34px;height:34px;animation-duration:1.6s"></div>'}</div>`; }).join('')}
+          ${done ? FLAG : ''}
+          <div style="position:absolute;left:50%;bottom:-14%;translate:-50% 0;width:62px;height:62px;border-radius:50%;background:conic-gradient(${done ? '#FFC93C' : '#FF8FB1'} ${Math.round(prog.done / Math.max(1, prog.total) * 360)}deg,rgba(255,255,255,.75) 0);box-shadow:0 4px 10px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center"><div style="width:46px;height:46px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#FF6FA5">${n}</div></div></div>`; }).join('')}
     </div>
     <div class="home-char" style="position:absolute;left:47%;bottom:1%;width:min(15vw,22vh);z-index:5">${myChar()}</div>
     <div style="position:absolute;right:16px;bottom:16px;display:flex;gap:14px;z-index:6">
@@ -97,12 +104,12 @@ function openBag() {
 }
 
 function openRoom() {
-  playSfx('pop'); playMusic('calm');
+  playSfx('pop'); playMusic('music/calm.mp3');
   const fr = state.friends;
   const cushion = inner => `<div style="width:180px;text-align:center"><div class="room-friend" style="width:160px;margin:0 auto;min-height:160px">${inner}</div><svg viewBox="0 0 160 40" width="180"><ellipse cx="80" cy="20" rx="76" ry="16" fill="#FFB8D9"/><ellipse cx="80" cy="16" rx="66" ry="10" fill="#FFD3E8"/></svg></div>`;
   const list = fr.length ? fr.map(f => cushion(charHtml(f.characterId, 7))).join('') : cushion('') + cushion('') + cushion('');
   const ov = overlay(`<div style="display:flex;flex-wrap:wrap;gap:20px;justify-content:center;align-items:end">${list}</div>`, 'linear-gradient(#FFF0F7,#FFE3F0)');
-  ov.querySelector('.ov-close').addEventListener('click', () => playMusic('happy'));
+  ov.querySelector('.ov-close').addEventListener('click', () => playMusic(HOME_MUSIC));
   if (!fr.length) speak(LINES.roomEmpty);
   ov.querySelectorAll('.room-friend').forEach(el => { if (el.innerHTML) attachPetting(el, { onTap: () => { el.classList.remove('boing'); void el.offsetWidth; el.classList.add('boing'); playSfx('giggle'); } }); });
 }
@@ -148,7 +155,7 @@ async function afterStart() {
   if (needsSetup()) await setup();
   if (!H().characterId) await birth();
   await mapReady;
-  playMusic('happy');
+  playMusic(HOME_MUSIC);
   renderHome();
   const m = /evolve=(\d)-(\d)/.exec(location.search);
   if (m) {

@@ -30,7 +30,7 @@ export function islandProgress(island, items, placeIds) {
   const mastered = items.filter(it => isMastered(island, it)).length;
   const allVisited = placeIds.every(p => island.visited.includes(p));
   const days = island.days.length;
-  return { mastered, total: items.length, allVisited, days, cleared: mastered === items.length && allVisited && days >= MIN_DAYS };
+  return { mastered, total: items.length, allVisited, days, cleared: items.length > 0 && mastered === items.length && days >= MIN_DAYS };
 }
 
 function shuffle(arr, rng) {
