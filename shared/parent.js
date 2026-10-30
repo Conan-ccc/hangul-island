@@ -58,7 +58,7 @@ function progressHtml(state) {
     });
     const pr = content ? islandProgress(isl, content.items, content.placeIds) : null;
     const btn = isl.cleared ? '' : `<button class="pp-clear" data-n="${Number(n)}" style="border:none;background:#f3eef3;border-radius:8px;padding:4px 8px;font-size:13px">완료로 처리</button>`;
-    return `<tr><td>${Number(n)}섬<br><span style="color:#888;font-size:12px">${ISLANDS[n]?.title || ''}</span></td><td>${isl.cleared ? '완료' : '진행 중'} ${btn}</td><td>${mastered.length}/${items.length} 익힘${left.length ? '<br><span style="color:#888;font-size:12px">남은 것: ' + left.join(', ') + '</span>' : ''}</td><td>${isl.days.length}일${pr && !pr.allVisited ? '<br><span style="color:#888;font-size:12px">안 간 장소 있음</span>' : ''}</td></tr>`;
+    return `<tr><td>${Number(n)}섬<br><span style="color:#888;font-size:12px">${ISLANDS[n]?.title || ''}</span></td><td>${isl.cleared ? '완료' : '진행 중'} ${btn}</td><td>${mastered.length}/${items.length} 익힘${left.length ? '<br><span style="color:#888;font-size:12px">남은 것: ' + left.join(', ') + '</span>' : ''}</td><td>${isl.days.length}일</td></tr>`;
   }).join('');
   return `<div>캐릭터: <b>${ch ? esc(ch.name) : '아직 없음'}</b> · ${h.stage + 1}단계 / 8단계</div>
     <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:14px"><tr style="color:#888"><td>섬</td><td>상태</td><td>익힌 글자</td><td>놀이한 날</td></tr>${rows || '<tr><td colspan="4">아직 기록 없음</td></tr>'}</table>`;

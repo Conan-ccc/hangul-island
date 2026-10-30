@@ -43,7 +43,7 @@ export async function run(ctx, { rounds }) {
             c.style.transition = 'left .4s, top .4s, transform .4s, opacity .4s'; c.style.left = '64%'; c.style.top = '55%'; c.style.transform = 'scale(.3)'; c.style.opacity = '0';
             friend.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-30px)' }, { transform: 'translateY(0)' }], { duration: 500, iterations: 2 });
             cheer(ctx, friend);
-            for (const it of [r.answer, ...(r.credit || [])]) { ctx.onSuccess(it, 'gift'); results.push({ item: it, type: 'gift' }); }
+            for (const it of new Set([r.answer, ...(r.credit || [])])) { ctx.onSuccess(it, 'gift'); results.push({ item: it, type: 'gift' }); }
             tick(); setTimeout(done, 900);
             return true;
           }

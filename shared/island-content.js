@@ -4,6 +4,7 @@ import { decompose, syllables } from './hangul.js';
 import { buildIsland1Content as buildFamilyContent } from './island1-content.js';
 import { isMastered, MASTERY_COUNT } from './mastery.js';
 import { themeOf, MECH_TYPE } from './themes.js';
+import { strokesFor } from './strokes.js';
 
 const EXTRA_CONS = ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅈ', 'ㅎ'];
 const EXTRA_VOW = ['ㅏ', 'ㅓ', 'ㅗ', 'ㅜ', 'ㅣ', 'ㅡ'];
@@ -39,11 +40,25 @@ export function unitsInWord(n, word) {
 
 // Which units a mechanic can give credit to on this island (for the "where to go next" markers)
 export function creditable(n, mech, profile) {
+  const isl = ISLANDS[n];
+  if (isl?.kind === 'family') {
+    const c = buildFamilyContent(profile);
+    const famNames = c.family.map(f => f.name);
+    if (mech === 'fruit' || mech === 'rise') return c.fruitTargets;
+    if (mech === 'find' || mech === 'pairs') return c.findTargets;
+    if (mech === 'gift') return famNames.length ? famNames : [c.full];
+    if (mech === 'door') return traceKeys(c.given);
+    if (mech === 'bridge') return uniq(c.bridgeWords.flatMap(w => [w.join(''), ...w]));
+    return c.items;
+  }
   const units = islandUnits(n, profile);
-  if (ISLANDS[n]?.kind === 'family') return units;
-  if (mech === 'gift' || mech === 'pairs') return uniq(ISLANDS[n].words.flatMap(w => unitsInWord(n, w)));
+  if (mech === 'gift' || mech === 'pairs') return uniq(isl.words.flatMap(w => unitsInWord(n, w)));
+  if (mech === 'door') return uniq(isl.trace.map(t => units.find(k => k === t || (isl.kind === 'jamo' ? isl.units.find(u => u.key === k)?.jamo === t : syllables(k).includes(t)))).filter(Boolean));
   return units;
 }
+
+// Syllables of a name that the tracer can draw (compound vowels / double consonants have no stroke data)
+export function traceKeys(name) { return syllables(name).filter(s => strokesFor(s)).slice(0, 3); }
 
 export function buildMechs(n, profile, island, rng = Math.random) {
   const isl = ISLANDS[n];
@@ -77,7 +92,7 @@ export function buildMechs(n, profile, island, rng = Math.random) {
       answer: w, pic: WORDS[w], credit: unitsInWord(n, w), options: shuffle([w, ...shuffle(wordsWithPic.filter(x => x !== w), rng).slice(0, 2)], rng) })) }),
     door: () => {
       const unitOf = {};
-      for (const t of isl.trace) { const u = units.find(x => x.jamo === t || x.key === t || (isl.kind !== 'jamo' && partsOf(x.key).includes(t))); if (u) unitOf[t] = u.key; }
+      for (const t of isl.trace) { const u = units.find(x => x.jamo === t || x.key === t || (isl.kind !== 'jamo' && syllables(x.key).includes(t))); if (u) unitOf[t] = u.key; }
       const wantUnits = pickFor(island, keys, keys.length, rng, T.door);
       const keysT = [...isl.trace].sort((a, b) => wantUnits.indexOf(unitOf[a] ?? '') - wantUnits.indexOf(unitOf[b] ?? '')).slice(0, 3);
       return { keys: keysT, unitOf, guideOpacity: Math.max(0.25, 0.6 - (n - 1) * 0.05) };
@@ -95,7 +110,7 @@ function familyMechs(profile, island, rng) {
     fruit: () => ({ rounds: pickFor(island, c.fruitTargets, 4, rng, T.fruit).map(k => ({ target: k, word: null, pic: null, line: k + '!', options: shuffle([k, ...shuffle(c.fruitDistractors, rng).slice(0, 3)], rng) })) }),
     bridge: () => ({ mode: 'words', rounds: c.bridgeWords.map(w => ({ word: w.join(''), pic: null, blocks: w, extra: shuffle(c.fruitDistractors, rng).slice(0, 1) })) }),
     gift: () => ({ rounds: shuffle(c.giftRequests, rng).slice(0, 3).map(r => ({ answer: r.answer, pic: null, role: r.role, options: r.options, credit: [] })) }),
-    door: () => ({ keys: syllables(c.given).slice(0, 3), unitOf: Object.fromEntries(syllables(c.given).map(s => [s, s])), guideOpacity: 0.35 }),
+    door: () => { const ks = traceKeys(c.given); const keys = ks.length ? ks : ['ㅇ']; return { keys, unitOf: Object.fromEntries(ks.map(s => [s, s])), guideOpacity: 0.35 }; },
     find: () => { const t = pickFor(island, c.findTargets, 1, rng, T.find)[0] || c.given; return { target: t, decoys: c.findDecoysFor(t), count: 4, word: null, pic: null }; },
     rise: () => ({ rounds: pickFor(island, c.fruitTargets, 2, rng, T.rise).map(k => ({ target: k, word: null, pic: null, line: k + '!', decoys: c.fruitDistractors.slice(0, 3), need: 3 })) }),
     pairs: () => ({ pairs: c.findTargets.slice(0, 4).map(w => ({ word: w, pic: null, credit: [w] })) }),

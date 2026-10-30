@@ -43,7 +43,7 @@ export async function run(ctx, { pairs }) {
         a.done = x.done = true;
         [a, x].forEach(y => { y.card.style.transition = 'transform .4s'; y.card.style.transform = 'scale(1.08)'; });
         const [cx, cy] = center(x.card); ctx.burst(cx, cy, 'stars'); ctx.sfx('success');
-        for (const it of [x.c.p.word, ...(x.c.p.credit || [])]) { ctx.onSuccess(it, 'pairs'); results.push({ item: it, type: 'pairs' }); }
+        for (const it of new Set([x.c.p.word, ...(x.c.p.credit || [])])) { ctx.onSuccess(it, 'pairs'); results.push({ item: it, type: 'pairs' }); }
         tick();
         await ctx.speak(x.c.p.word);
         left -= 1;

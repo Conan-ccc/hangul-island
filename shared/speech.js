@@ -83,7 +83,9 @@ export function stopSpeech() { stopCurrent(); }
 async function playClips(parts, my) {
   const ctx = audioContext();
   if (!ctx) return false;
-  if (ctx.state === 'suspended') { try { await ctx.resume(); } catch { /* ignore */ } }
+  // resume() can stay pending forever without a user gesture: never wait on it for long
+  if (ctx.state === 'suspended') { try { await Promise.race([ctx.resume(), new Promise(r => setTimeout(r, 300))]); } catch { /* ignore */ } }
+  if (ctx.state !== 'running') return false;
   for (let i = 0; i < parts.length; i++) {
     let buf;
     try { buf = await loadClip(parts[i]); } catch { return false; }

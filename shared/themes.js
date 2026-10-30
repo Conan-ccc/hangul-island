@@ -51,7 +51,17 @@ export const THEMES = {
       { id: 'boat', mech: 'bridge', skin: { bg: 'theme/3/act-boat.jpg' } },
     ],
   },
-  4: generic(4, '과일 섬'),
+  4: {
+    n: 4, name: '과일 섬', music: 'music/island4.mp3', map: 'theme/4/map.jpg', spots: 'theme/4/map.json',
+    places: [
+      { id: 'tree', mech: 'fruit', skin: { bg: 'theme/4/act-tree.jpg', item: 'theme/4/peach.webp', target: 'theme/4/fruitbasket.webp' } },
+      { id: 'vines', mech: 'rise', skin: { bg: 'theme/4/act-vines.jpg', item: 'theme/4/berry.webp', dir: 'fall' } },
+      { id: 'patch', mech: 'find', skin: { bg: 'theme/4/act-patch.jpg', item: 'theme/4/melon.webp', open: 'theme/4/melon-open.webp' } },
+      { id: 'market', mech: 'gift', skin: { bg: 'theme/4/act-market.jpg', friends: ['theme/4/friend-squirrel.webp', 'theme/4/friend-raccoon.webp', 'theme/4/friend-hedgehog.webp'] } },
+      { id: 'juice', mech: 'bridge', skin: { bg: 'theme/4/act-juice.jpg' } },
+      { id: 'cellar', mech: 'door', skin: { bg: 'theme/4/act-cellar.jpg' } },
+    ],
+  },
   5: {
     n: 5, name: '공룡 섬', music: 'music/island5.mp3', map: 'theme/5/map.jpg', spots: 'theme/5/map.json',
     places: [
@@ -63,9 +73,39 @@ export const THEMES = {
       { id: 'fossil', mech: 'pairs', skin: { bg: 'theme/5/act-fossil.jpg', back: 'theme/5/fossil-card.webp' } },
     ],
   },
-  6: generic(6, '탈것 섬'),
-  7: generic(7, '밤하늘 별 섬'),
-  8: generic(8, '무지개 성'),
+  6: {
+    n: 6, name: '탈것 섬', music: 'music/island6.mp3', map: 'theme/6/map.jpg', spots: 'theme/6/map.json',
+    places: [
+      { id: 'station', mech: 'bridge', skin: { bg: 'theme/6/act-station.jpg' } },
+      { id: 'road', mech: 'rise', skin: { bg: 'theme/6/act-road.jpg', dir: 'rise' } },
+      { id: 'harbor', mech: 'gift', skin: { bg: 'theme/6/act-harbor.jpg', friends: ['theme/6/friend-bear-driver.webp', 'theme/6/friend-bunny-pilot.webp', 'theme/6/friend-dog-captain.webp'] } },
+      { id: 'parking', mech: 'find', skin: { bg: 'theme/6/act-parking.jpg', item: 'theme/6/car.webp', open: 'theme/6/car-open.webp' } },
+      { id: 'airport', mech: 'pairs', skin: { bg: 'theme/6/act-airport.jpg', back: 'theme/6/ticket.webp' } },
+      { id: 'tunnel', mech: 'door', skin: { bg: 'theme/6/act-tunnel.jpg' } },
+    ],
+  },
+  7: {
+    n: 7, name: '밤하늘 별 섬', music: 'music/island7.mp3', map: 'theme/7/map.jpg', spots: 'theme/7/map.json',
+    places: [
+      { id: 'tent', mech: 'bridge', skin: { bg: 'theme/7/act-tent.jpg' } },
+      { id: 'fireflies', mech: 'rise', skin: { bg: 'theme/7/act-fireflies.jpg', item: 'theme/7/firefly.webp', dir: 'rise' } },
+      { id: 'hill', mech: 'find', skin: { bg: 'theme/7/act-hill.jpg', item: 'theme/7/star-dim.webp', open: 'theme/7/star-bright.webp' } },
+      { id: 'owl', mech: 'gift', skin: { bg: 'theme/7/act-owl.jpg', friends: ['theme/7/friend-owl.webp', 'theme/7/friend-hedgehog-night.webp', 'theme/7/friend-bunny-moon.webp'] } },
+      { id: 'lake', mech: 'pairs', skin: { bg: 'theme/7/act-lake.jpg', back: 'theme/7/moon-card.webp' } },
+      { id: 'gate', mech: 'door', skin: { bg: 'theme/7/act-gate.jpg' } },
+    ],
+  },
+  8: {
+    n: 8, name: '무지개 성', music: 'music/island8.mp3', map: 'theme/8/map.jpg', spots: 'theme/8/map.json',
+    places: [
+      { id: 'garden', mech: 'fruit', skin: { bg: 'theme/8/act-garden.jpg', item: 'theme/8/rose.webp', target: 'theme/8/vase.webp' } },
+      { id: 'hall', mech: 'bridge', skin: { bg: 'theme/8/act-hall.jpg' } },
+      { id: 'throne', mech: 'gift', skin: { bg: 'theme/8/act-throne.jpg', friends: ['theme/8/friend-king-bear.webp', 'theme/8/friend-queen-cat.webp', 'theme/8/friend-knight-pup.webp'] } },
+      { id: 'tower', mech: 'rise', skin: { bg: 'theme/8/act-tower.jpg', dir: 'rise' } },
+      { id: 'gallery', mech: 'find', skin: { bg: 'theme/8/act-gallery.jpg', item: 'theme/8/frame.webp', open: 'theme/8/frame-open.webp' } },
+      { id: 'gate', mech: 'door', skin: { bg: 'theme/8/act-gate.jpg' } },
+    ],
+  },
 };
 
 export const HOME_MUSIC = 'music/home.mp3';

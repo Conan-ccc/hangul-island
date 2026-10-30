@@ -24,7 +24,7 @@ export async function run(ctx, { rounds }) {
       const x = 8 + ctx.rng() * 78;
       const dur = 9000 + ctx.rng() * 3000;
       const art = skin.item ? `background:url(${asset(skin.item)}) center/contain no-repeat;` : `background:radial-gradient(circle at 35% 30%,#fff 0,${['#FFB8D9', '#B8E0FF', '#FFE7A8', '#CFF2C4'][Math.floor(ctx.rng() * 4)]} 45%,rgba(255,255,255,.4) 100%);border-radius:50%;box-shadow:inset -8px -10px 0 rgba(0,0,0,.06);`;
-      const it = el('div', `position:absolute;left:${x}%;${fall ? 'top:-150px' : 'bottom:-150px'};width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;${art}font-size:${text.length >= 2 ? 36 : 50}px;font-weight:800;color:#4A3A48;text-shadow:0 0 6px #fff,0 0 12px #fff;cursor:pointer;filter:drop-shadow(0 8px 8px rgba(0,0,0,.18))`, '', 'floater');
+      const it = el('div', `position:absolute;left:${x}%;${fall ? 'top:-150px' : 'bottom:-150px'};width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;${art}font-size:${text.length >= 4 ? 24 : text.length === 3 ? 30 : text.length === 2 ? 36 : 50}px;font-weight:800;color:#4A3A48;text-shadow:0 0 6px #fff,0 0 12px #fff;cursor:pointer;filter:drop-shadow(0 8px 8px rgba(0,0,0,.18))`, '', 'floater');
       it.textContent = text; it.dataset.text = text;
       field.appendChild(it);
       const sway = (ctx.rng() - 0.5) * 120;

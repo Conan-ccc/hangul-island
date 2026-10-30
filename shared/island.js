@@ -65,7 +65,8 @@ export async function startIsland(n) {
   const theme = themeOf(n);
   const app = document.getElementById('app');
   let spots = {};
-  try { spots = await (await fetch(asset(theme.spots))).json(); } catch { /* fallback below */ }
+  // never wait long for positions (weak network): fall back after 2.5 s
+  try { spots = await Promise.race([fetch(asset(theme.spots)).then(r => r.json()), new Promise((_, rej) => setTimeout(() => rej(new Error('slow')), 2500))]); } catch { /* fallback below */ }
   theme.places.forEach((p, i) => { if (!spots[p.id]) spots[p.id] = FALLBACK_SPOTS[i % FALLBACK_SPOTS.length]; });
   if (!spots.start) spots.start = [52, 48];
   const units = islandUnits(n, state.profile);
