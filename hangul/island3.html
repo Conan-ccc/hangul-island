@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>한글 섬 여행 -  자음 섬 둘</title>
+<link rel="stylesheet" href="../shared/ui.css">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="apple-touch-icon" href="../icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="한글 섬">
+<meta name="theme-color" content="#FFC2D9">
+<script type="module">import { registerSW } from '../shared/register-sw.js'; registerSW('../sw.js');</script>
+</head>
+<body>
+<div id="app" style="position:fixed;inset:0;overflow:hidden;background:#8fd6f2"></div>
+<script type="module">import { startIsland } from '../shared/island.js'; startIsland(3);</script>
+</body>
+</html>

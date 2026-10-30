@@ -137,3 +137,26 @@ export function pickCharacter(usedIds, rng = Math.random) {
   const list = pool.length ? pool : all;
   return list[Math.floor(rng() * list.length) % list.length];
 }
+
+// ---- v2: clay-render images (assets/char/<id>-<1..8>.webp); SVG above stays as the offline/failed-load fallback
+const ASSET_BASE = (() => { try { return new URL('../assets/', import.meta.url).href; } catch { return 'assets/'; } })();
+export function charUrl(id, stage) {
+  const s = Math.max(0, Math.min(STAGES - 1, Math.floor(Number(stage) || 0)));
+  return `${ASSET_BASE}char/${BY_ID[id] ? id : 'cat'}-${s + 1}.webp`;
+}
+// images 5-8 come from a second sheet and the final one carries a big glow, so widen them to keep growth visible
+const STAGE_WIDTH = [80, 84, 88, 92, 108, 112, 118, 140];
+const DECO_BOX = { glasses: '34 48 52 28', 'shell-necklace': '42 80 36 22', bell: '42 80 36 22' };
+export function decoSticker(id) {
+  if (!DECORATIONS.some(d => d.id === id)) return '';
+  const h = DATA[0];
+  return `<svg class="deco" viewBox="${DECO_BOX[id] || '26 16 30 30'}">${decoration(id, h)}</svg>`;
+}
+// HTML for a character: image with SVG fallback, optional decoration sticker
+export function charHtml(id, stage, opts = {}) {
+  const deco = opts.decoration ? decoSticker(opts.decoration) : '';
+  const svg = drawCharacter(id, stage).replace(/"/g, '&quot;');
+  const s = Math.max(0, Math.min(STAGES - 1, Math.floor(Number(stage) || 0)));
+  const w = STAGE_WIDTH[s];
+  return `<div class="charbox"><img class="charimg" style="width:${w}%;margin-left:${(100 - w) / 2}%" src="${charUrl(id, stage)}" alt="" draggable="false" onerror="this.outerHTML=this.dataset.svg" data-svg="${svg}">${deco}</div>`;
+}

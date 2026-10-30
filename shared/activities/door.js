@@ -1,26 +1,31 @@
-// 선 긋기 문: trace the shape on the door to open it
+// 따라 쓰기 문: trace the letter on the door to open it
 import { createTracer } from '../trace.js';
-import { SCENES, el, cheer, buddy, wait } from './common.js';
+import { jamoName } from '../hangul.js';
+import { scene, el, cheer, buddy, wait, board, praise } from './common.js';
 
-export async function run(ctx, { keys = ['ㅡ', 'ㅣ', 'ㅇ'], guideOpacity = 0.5 }) {
-  ctx.stage.innerHTML = SCENES.door;
+export async function run(ctx, { keys, unitOf = {}, guideOpacity = 0.5 }) {
+  scene(ctx, 'door');
   buddy(ctx);
+  const results = [];
   for (const key of keys) {
-    const door = el('div', 'position:absolute;left:50%;top:54%;translate:-50% -50%;width:min(42vw,62vh);height:min(52vw,76vh);background:#C98A5A;border-radius:48% 48% 12px 12px;border:10px solid #A86E43;transition:transform .8s;transform-origin:left center;perspective:600px;z-index:2');
-    const pad = el('div', 'position:absolute;left:10%;top:14%;width:80%;height:72%;background:#FFF8EE;border-radius:24px');
-    door.appendChild(pad);
-    ctx.stage.appendChild(door);
-    ctx.speak(ctx.phrase('traceDoor'));
+    const isJamo = !/[가-힣]/.test(key);
+    board(ctx, { big: key });
+    ctx.boardLine = isJamo ? jamoName(key) : key;
+    const pad = el('div', 'position:absolute;left:50%;top:60%;translate:-50% -50%;width:min(44vh,40vw);height:min(44vh,40vw);background:rgba(255,250,240,.93);border-radius:28px;box-shadow:0 10px 24px rgba(80,50,30,.25);z-index:3;transition:transform .8s, opacity .8s');
+    ctx.stage.appendChild(pad);
+    ctx.prompt = ctx.phrase('traceDoor');
+    await ctx.speak(ctx.boardLine);
+    ctx.speak(ctx.prompt);
     let tracer;
     await new Promise(done => { tracer = createTracer(pad, key, { guideOpacity, onComplete: done }); });
-    cheer(ctx, door);
-    ctx.speak(ctx.phrase('great'));
-    await wait(500);
-    door.style.transform = 'rotateY(-75deg)';
+    cheer(ctx, pad);
+    if (unitOf[key]) { ctx.onSuccess(unitOf[key], 'trace'); results.push({ item: unitOf[key], type: 'trace' }); }
+    await ctx.speak(ctx.boardLine);
+    await praise(ctx);
+    pad.style.transform = 'scale(.2) rotate(20deg)'; pad.style.opacity = '0';
     ctx.sfx('whoosh');
-    await wait(1000);
-    tracer.destroy();
-    door.remove();
+    await wait(800);
+    tracer.destroy(); pad.remove();
   }
-  return [];
+  return results;
 }

@@ -1,0 +1,4 @@
+Sound effects: Kenney Interface Sounds (CC0) https://kenney.nl/assets/interface-sounds
+Voice: Microsoft Edge neural TTS ko-KR-SunHiNeural via edge-tts
+Images: generated with Aside image generation
+Music: 'Happy Loop' by wipics (CC0) https://opengameart.org/content/happy-loop ; 'Heavenly Loop' by isaiah658 (CC0) https://opengameart.org/content/heavenly-loop

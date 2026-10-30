@@ -1,55 +1,55 @@
-// 글자 열매 따기: drag the named fruit into the basket
+// 글자 열매 따기: the board shows the letter + picture; drag the matching fruit into the basket
 import { makeDraggable, lockAll } from '../drag.js';
-import { SCENES, shuffle, card, at, el, glow, unglow, cheer, buddy, wait, ask } from './common.js';
+import { scene, shuffle, at, el, glow, unglow, cheer, buddy, wait, ask, board, picUrl, praise } from './common.js';
 
-const SPOTS = [[30, 22], [44, 14], [58, 22], [36, 40], [52, 38], [24, 36], [64, 36]];
-const BASKET = '<svg viewBox="0 0 120 90" width="100%"><path d="M8 30 h104 l-12 56 h-80Z" fill="#E8B04A"/><path d="M14 40 h92 M18 56 h84 M22 72 h76" stroke="#C98A3A" stroke-width="4"/><path d="M30 30 q30 -40 60 0" stroke="#C98A3A" stroke-width="6" fill="none"/></svg>';
+const SPOTS = [[24, 40], [38, 30], [52, 38], [33, 52], [47, 55], [60, 47]];
 
-export async function run(ctx, { targets, distractors, rounds = 4 }) {
-  ctx.stage.innerHTML = SCENES.tree;
+export async function run(ctx, { rounds }) {
+  scene(ctx, 'tree');
   buddy(ctx);
-  const basket = at(el('div', 'position:absolute;width:min(20vw,26vh)', BASKET, 'basket'), 82, 78);
+  const basket = at(el('div', 'position:absolute;width:min(20vw,27vh);z-index:3', `<img class="picimg" src="${picUrl('basket')}" alt="">`, 'basket'), 82, 76);
   ctx.stage.appendChild(basket);
   const results = [];
-  for (let r = 0; r < rounds && targets.length; r++) {
-    const target = targets[r % targets.length];
-    const opts = shuffle([target, ...shuffle(distractors, ctx.rng).filter(d => d !== target).slice(0, 4)], ctx.rng);
+  for (const r of rounds) {
+    board(ctx, { pic: r.pic, word: r.word, target: r.target });
+    ctx.boardLine = r.line;
     const spots = shuffle(SPOTS, ctx.rng);
-    const fruits = opts.map((t, i) => {
-      const f = at(card(t, 'border-radius:50%;background:#FF8FA3;color:#fff;border-color:#fff;width:96px;height:96px;padding:0'), spots[i][0], spots[i][1]);
-      if (t.length >= 2) { f.style.width = f.style.height = (t.length >= 3 ? 150 : 124) + 'px'; f.style.fontSize = '34px'; }
+    const fruits = r.options.map((t, i) => {
+      const size = t.length >= 3 ? 150 : t.length === 2 ? 128 : 108;
+      const f = at(el('div', `position:absolute;width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:${t.length >= 2 ? 40 : 58}px;font-weight:800;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.15);background:radial-gradient(circle at 35% 30%,#FFC1CC 0,#FF7F96 55%,#E85A75 100%);box-shadow:inset 0 -8px 0 rgba(0,0,0,.1),0 8px 14px rgba(120,40,60,.3);z-index:3`, '', 'fruit'), spots[i][0], spots[i][1] + 4);
+      f.textContent = t; f.dataset.text = t;
+      f.insertAdjacentHTML('beforeend', '<span style="position:absolute;top:-10px;left:50%;width:16px;height:22px;background:#5DBB6A;border-radius:0 80% 0 80%;transform:translateX(-50%) rotate(-20deg)"></span>');
       ctx.stage.appendChild(f);
       f.addEventListener('pointerdown', () => ctx.speak(t));
       return f;
     });
-    ask(ctx, ctx.phrase('pickFruit', { call: ctx.call, item: target }), fruits.find(x => x.dataset.text === target));
+    ask(ctx, ctx.phrase('pickFruit', { item: r.target }), fruits.find(x => x.dataset.text === r.target));
     let wrong = 0;
     await new Promise(done => {
-      for (const f of fruits) {
-        makeDraggable(f, {
-          targets: () => [basket],
-          onDrop: tg => {
-            if (!tg) return false;
-            if (f.dataset.text === target) {
-              lockAll(fruits);
-              f.style.transition = 'all .4s'; f.style.left = '82%'; f.style.top = '74%'; f.style.transform = 'scale(.6)';
-              cheer(ctx, basket);
-              ctx.onSuccess(target, 'fruit'); results.push({ item: target, type: 'fruit' });
-              setTimeout(done, 500);
-              return true;
-            }
-            wrong += 1;
-            if (wrong >= 2) glow(fruits.find(x => x.dataset.text === target));
-            ctx.speak(ctx.phrase('tryAgain'));
-            return false;
-          },
-        });
-      }
+      for (const f of fruits) makeDraggable(f, {
+        targets: () => [basket],
+        onDrop: tg => {
+          if (!tg) return false;
+          if (f.dataset.text === r.target) {
+            lockAll(fruits);
+            f.style.transition = 'left .4s, top .4s, transform .4s'; f.style.left = '82%'; f.style.top = '72%'; f.style.transform = 'scale(.5)';
+            cheer(ctx, basket);
+            ctx.onSuccess(r.target, 'fruit'); results.push({ item: r.target, type: 'fruit' });
+            setTimeout(done, 500);
+            return true;
+          }
+          wrong += 1;
+          if (wrong >= 2) glow(fruits.find(x => x.dataset.text === r.target));
+          ctx.speak(ctx.phrase('tryAgain'));
+          return false;
+        },
+      });
     });
-    await ctx.speak(ctx.phrase('great'));
+    await ctx.speak(r.line);
+    await praise(ctx);
     unglow(ctx.stage);
     fruits.forEach(f => f.remove());
-    await wait(200);
+    await wait(150);
   }
   return results;
 }

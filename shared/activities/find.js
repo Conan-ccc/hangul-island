@@ -1,16 +1,19 @@
-// 이름 바닷가: tap every card that shows the target name
-import { SCENES, shuffle, card, at, glow, unglow, wiggle, buddy, wait, center, ask } from './common.js';
+// 바닷가 찾기: tap every shell card that shows the board's letter
+import { scene, shuffle, at, el, glow, unglow, wiggle, buddy, wait, center, ask, board, praise } from './common.js';
 
-export async function run(ctx, { target, decoys, count = 6 }) {
-  ctx.stage.innerHTML = SCENES.beach;
+export async function run(ctx, { target, decoys, count = 5, word, pic }) {
+  scene(ctx, 'beach');
   buddy(ctx);
-  const total = Math.max(count + 2, Math.min(10, count + decoys.length * 2));
+  board(ctx, { pic, word, target });
+  ctx.boardLine = word && word !== target ? `${target}! ${word}의 ${target}!` : target;
+  const total = Math.max(count + 3, Math.min(10, count + decoys.length * 2));
   const texts = shuffle([...Array(count).fill(target), ...Array.from({ length: total - count }, (_, i) => decoys[i % decoys.length])], ctx.rng);
   const cols = 5, rows = Math.ceil(texts.length / cols);
   const cards = texts.map((t, i) => {
-    const cx = 18 + (i % cols) * 16 + (ctx.rng() - 0.5) * 6;
-    const cy = 34 + Math.floor(i / cols) * (50 / rows) + (ctx.rng() - 0.5) * 6;
-    const c = at(card(t, 'background:#fff;cursor:pointer;transition:all .5s'), cx, cy);
+    const cx = 18 + (i % cols) * 16 + (ctx.rng() - 0.5) * 5;
+    const cy = 50 + Math.floor(i / cols) * (36 / rows) + (ctx.rng() - 0.5) * 5;
+    const c = at(el('div', `position:absolute;min-width:110px;height:110px;padding:0 12px;display:flex;align-items:center;justify-content:center;border-radius:50% 50% 44% 44%;background:radial-gradient(circle at 40% 30%,#fff 0,#FFE3EC 60%,#F7C4D4 100%);box-shadow:0 8px 12px rgba(120,80,60,.25);font-size:${t.length >= 3 ? 34 : 48}px;font-weight:800;color:#4A3A48;cursor:pointer;transition:all .5s;z-index:3`, '', 'card'), cx, cy);
+    c.textContent = t; c.dataset.text = t;
     c.style.rotate = ((ctx.rng() - 0.5) * 16).toFixed(1) + 'deg';
     ctx.stage.appendChild(c);
     return c;
@@ -30,13 +33,14 @@ export async function run(ctx, { target, decoys, count = 6 }) {
         left -= 1; wrong = 0; unglow(ctx.stage);
         if (left === 0) setTimeout(done, 500);
       } else {
-        wiggle(c); ctx.sfx('boing');
+        wiggle(c); ctx.sfx('boing'); ctx.speak(c.dataset.text);
         wrong += 1;
-        if (wrong >= 2) { const rem = cards.find(x => x.dataset.text === target && !x.dataset.found); if (rem) glow(rem); }
+        if (wrong >= 2) glow(cards.find(x => x.dataset.text === target && !x.dataset.found));
       }
     });
   });
-  await ctx.speak(ctx.phrase('great'));
-  await wait(200);
+  await ctx.speak(ctx.boardLine);
+  await praise(ctx);
+  await wait(150);
   return results;
 }

@@ -2,11 +2,12 @@
 import { exportCode, importCode, defaultState, saveState } from './save.js';
 import { isMastered, islandProgress } from './mastery.js';
 import { CHARACTERS } from './characters.js';
-import { buildIsland1Content } from './island1-content.js';
+import { islandUnits, PLACE_IDS } from './island-content.js';
+import { ISLANDS } from './curriculum.js';
 
 const ROLES = ['엄마', '아빠', '할머니', '할아버지', '외할머니', '외할아버지', '이모', '삼촌', '고모', '언니', '오빠', '누나', '형', '동생', '기타'];
 // island number -> content summary, so the parent sees n / total and what is left
-const ISLAND_CONTENT = { 1: p => { const c = buildIsland1Content(p); return { items: c.items, placeIds: c.placeIds }; } };
+const ISLAND_CONTENT = Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8].map(n => [n, p => ({ items: islandUnits(n, p), placeIds: PLACE_IDS })]));
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 // Long-press the top-right 64px zone for 2s, then answer a simple addition.
@@ -57,7 +58,7 @@ function progressHtml(state) {
     });
     const pr = content ? islandProgress(isl, content.items, content.placeIds) : null;
     const btn = isl.cleared ? '' : `<button class="pp-clear" data-n="${Number(n)}" style="border:none;background:#f3eef3;border-radius:8px;padding:4px 8px;font-size:13px">완료로 처리</button>`;
-    return `<tr><td>${Number(n)}섬</td><td>${isl.cleared ? '완료' : '진행 중'} ${btn}</td><td>${mastered.length}/${items.length} 익힘${left.length ? '<br><span style="color:#888;font-size:12px">남은 것: ' + left.join(', ') + '</span>' : ''}</td><td>${isl.days.length}일${pr && !pr.allVisited ? '<br><span style="color:#888;font-size:12px">안 간 장소 있음</span>' : ''}</td></tr>`;
+    return `<tr><td>${Number(n)}섬<br><span style="color:#888;font-size:12px">${ISLANDS[n]?.title || ''}</span></td><td>${isl.cleared ? '완료' : '진행 중'} ${btn}</td><td>${mastered.length}/${items.length} 익힘${left.length ? '<br><span style="color:#888;font-size:12px">남은 것: ' + left.join(', ') + '</span>' : ''}</td><td>${isl.days.length}일${pr && !pr.allVisited ? '<br><span style="color:#888;font-size:12px">안 간 장소 있음</span>' : ''}</td></tr>`;
   }).join('');
   return `<div>캐릭터: <b>${ch ? esc(ch.name) : '아직 없음'}</b> · ${h.stage + 1}단계 / 8단계</div>
     <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:14px"><tr style="color:#888"><td>섬</td><td>상태</td><td>익힌 글자</td><td>놀이한 날</td></tr>${rows || '<tr><td colspan="4">아직 기록 없음</td></tr>'}</table>`;
@@ -85,6 +86,7 @@ export function openParentPanel(state, onChange, { firstRun = false } = {}) {
     <div class="fam-list">${fam.map(famRow).join('')}</div>
     <button class="fam-add" style="border:none;background:#f3eef3;border-radius:10px;padding:8px 14px;margin-top:4px">+ 가족 추가</button>
     <h3>소리 크기</h3><input class="pp-vol" type="range" min="0" max="1" step="0.1" value="${state.settings.volume}" style="width:100%">
+    <label style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="checkbox" class="pp-music" ${state.settings.music === false ? '' : 'checked'} style="width:22px;height:22px"> 배경음악 켜기</label>
     ${firstRun ? '' : `<h3>진행 상황</h3>${progressHtml(state)}
     <h3>백업</h3><div style="font-size:13px;color:#888">이 코드를 메모나 카톡에 보관해 두면, 아이패드를 바꾸거나 데이터가 지워져도 그대로 이어서 할 수 있어요.</div>
     <textarea class="pp-code" readonly style="width:100%;height:70px;font-size:12px;border-radius:10px;border:1px solid #ddd;padding:8px">${esc(exportCode(state))}</textarea>
@@ -102,6 +104,7 @@ export function openParentPanel(state, onChange, { firstRun = false } = {}) {
     state.profile.childName = $('.pp-child').value.trim();
     state.profile.family = [...ov.querySelectorAll('.fam-row')].map(r => ({ role: r.querySelector('.fam-role').value, name: r.querySelector('.fam-name').value.trim() }));
     state.settings.volume = Number($('.pp-vol').value);
+    state.settings.music = $('.pp-music').checked;
   };
   ov.addEventListener('click', e => {
     const t = e.target;

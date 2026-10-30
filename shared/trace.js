@@ -1,5 +1,5 @@
 // Finger tracing widget
-import { STROKES, matchStroke } from './strokes.js';
+import { STROKES, matchStroke, strokesFor } from './strokes.js';
 import { playSfx } from './fx.js';
 import { speak } from './speech.js';
 
@@ -8,7 +8,8 @@ const d = pts => pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1
 const mk = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
 
 export function createTracer(container, key, opts = {}) {
-  const strokes = STROKES[key];
+  const strokes = strokesFor(key);
+  const tol = opts.tol ?? (STROKES[key] ? 14 : 9);
   if (!strokes) throw new Error('no-strokes:' + key);
   const svg = mk('svg', { viewBox: '0 0 100 100', preserveAspectRatio: 'xMidYMid meet', class: 'tracer' });
   svg.style.cssText = 'width:100%;height:100%;touch-action:none;display:block';
@@ -62,7 +63,7 @@ export function createTracer(container, key, opts = {}) {
   const up = e => {
     if (e.pointerId !== pid) return;
     pid = null;
-    const res = matchStroke(pts, strokes[idx]);
+    const res = matchStroke(pts, strokes[idx], tol);
     ink.setAttribute('d', '');
     if (res.ok) {
       doneG.appendChild(mk('path', { d: d(strokes[idx]), stroke: '#FF8FB1', 'stroke-width': '12', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', fill: 'none' }));

@@ -1,31 +1,32 @@
-// Island engine: map, tap-to-walk, places, activity runner, mastery, rewards, clear
+// v2 island engine: illustrated map, tap-to-walk, five places, activities, mastery, rewards, clear
 import { loadState, saveState, newIsland } from './save.js';
 import { recordSuccess, markVisit, islandProgress, isMastered } from './mastery.js';
-import { drawCharacter, DECORATIONS } from './characters.js';
-import { speak, phrase, unlockSpeech, setSpeechVolume } from './speech.js';
-import { playSfx, burst, unlockAudio, setVolume } from './fx.js';
+import { charHtml, DECORATIONS } from './characters.js';
+import { speak, phrase, unlockSpeech, setSpeechVolume, stopSpeech, preloadSpeech } from './speech.js';
+import { playSfx, burst, unlockAudio, setVolume, setMusic, playMusic, preloadSfx } from './fx.js';
 import { attachPetting } from './pet.js';
-import { callName } from './hangul.js';
-import { el, wait } from './activities/common.js';
+import { LINES } from './voice-keys.js';
+import { ISLANDS } from './curriculum.js';
+import { buildPlaces, islandUnits, PLACE_IDS } from './island-content.js';
+import { el, wait, asset } from './activities/common.js';
+import * as fruit from './activities/fruit.js';
+import * as bridge from './activities/bridge.js';
+import * as gift from './activities/gift.js';
+import * as door from './activities/door.js';
+import * as find from './activities/find.js';
 
 export const today = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
+const RUNNERS = { tree: fruit, bridge, animals: gift, door, beach: find };
+const DEFAULT_SPOTS = { tree: [22, 25], bridge: [50, 15], animals: [82, 32], door: [80, 72], beach: [30, 70], start: [52, 48] };
 const HOME_ICON = '<svg viewBox="0 0 60 60" width="48" height="48"><path d="M8 30 L30 10 L52 30 V52 H8Z" fill="#DCEBFF" stroke="#8EC5FF" stroke-width="3"/><rect x="24" y="36" width="12" height="16" fill="#8EC5FF"/></svg>';
-const BACK_ICON = '<svg viewBox="0 0 60 60" width="48" height="48"><circle cx="30" cy="30" r="26" fill="#fff"/><path d="M34 18 L20 30 L34 42" stroke="#C98AA8" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-const FOOT = '<svg viewBox="0 0 40 40" width="34" height="34"><ellipse cx="14" cy="24" rx="6" ry="9" fill="#C98AA8"/><ellipse cx="28" cy="16" rx="6" ry="9" fill="#C98AA8"/></svg>';
+const BACK_ICON = '<svg viewBox="0 0 60 60" width="52" height="52"><circle cx="30" cy="30" r="26" fill="#fff"/><path d="M34 18 L20 30 L34 42" stroke="#C98AA8" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const FOOT = '<svg viewBox="0 0 40 40" width="40" height="40"><ellipse cx="14" cy="24" rx="6" ry="9" fill="#fff" opacity=".9"/><ellipse cx="28" cy="16" rx="6" ry="9" fill="#fff" opacity=".9"/></svg>';
 
-export const PLACE_ICONS = {
-  tree: '<circle cx="0" cy="-40" r="50" fill="#7ED47F"/><rect x="-10" y="-5" width="20" height="45" rx="6" fill="#C98A5A"/><circle cx="-20" cy="-50" r="9" fill="#FF8FA3"/><circle cx="18" cy="-36" r="9" fill="#FF8FA3"/><circle cx="2" cy="-66" r="9" fill="#FF8FA3"/>',
-  bridge: '<path d="M-70 20 Q0 -40 70 20" stroke="#C98A5A" stroke-width="14" fill="none"/><path d="M-70 20 Q0 -40 70 20" stroke="#E8B04A" stroke-width="6" fill="none" stroke-dasharray="10 8"/><path d="M-80 34 h160" stroke="#8ECDF5" stroke-width="12" stroke-linecap="round"/>',
-  animals: '<path d="M-50 10 L0 -40 L50 10 V40 H-50Z" fill="#FFD3E8" stroke="#F58FB4" stroke-width="3"/><rect x="-12" y="14" width="24" height="26" fill="#C98AA8"/><ellipse cx="60" cy="20" rx="7" ry="16" fill="#fff" stroke="#ddd"/><circle cx="60" cy="40" r="14" fill="#fff" stroke="#ddd"/>',
-  door: '<path d="M-45 40 V-20 Q0 -70 45 -20 V40Z" fill="#C9B8D6"/><path d="M-26 40 V-10 Q0 -40 26 -10 V40Z" fill="#C98A5A"/><circle cx="14" cy="12" r="4" fill="#FFD84D"/>',
-  beach: '<ellipse cx="0" cy="20" rx="70" ry="26" fill="#FFE7B8"/><path d="M-30 10 q10 -20 20 0Z" fill="#FFB8D9"/><path d="M14 18 l8 -18 l8 18Z" fill="#FFD3E8"/><rect x="-6" y="-14" width="34" height="24" rx="6" fill="#fff" stroke="#FFC2D9" stroke-width="3"/>',
-};
-
-export function startIsland({ n, places, items, placeItems = {}, greeting }) {
+export async function startIsland(n) {
   const state = loadState();
   const H = state.subjects.hangul;
   if (!H.characterId || !/[가-힣]/.test(state.profile.childName)) { location.href = '../index.html'; return; }
@@ -34,72 +35,70 @@ export function startIsland({ n, places, items, placeItems = {}, greeting }) {
   const island = H.islands[key];
   if (!H.today || H.today.day !== today()) H.today = { day: today(), places: [] };
   saveState(state);
-  setVolume(state.settings.volume); setSpeechVolume(state.settings.volume);
-  const call = callName(state.profile.childName);
+  setVolume(state.settings.volume); setSpeechVolume(state.settings.volume); setMusic(state.settings.music !== false);
   const app = document.getElementById('app');
+  let spots = DEFAULT_SPOTS;
+  try { spots = { ...DEFAULT_SPOTS, ...(await (await fetch(asset(`bg/island${n}.json`))).json()) }; } catch { /* defaults */ }
+  const items = islandUnits(n, state.profile);
+  const places = buildPlaces(n, state.profile, island);
   let busy = false, unlocked = false;
+  preloadSfx();
+  preloadSpeech(Object.values(LINES));
 
   const ensureUnlocked = () => {
     if (unlocked) return;
-    unlocked = true; unlockSpeech(); unlockAudio();
-    speak(greeting || call + ', 섬에 왔어! 가고 싶은 곳을 눌러볼까?');
+    unlocked = true; unlockSpeech(); unlockAudio(); playMusic('happy');
+    speak(LINES.welcome);
   };
 
   function recommended() {
-    const notToday = places.filter(p => !H.today.places.includes(p.id));
-    const score = p => {
-      const its = placeItems[p.id] || [];
-      const open = its.filter(it => !isMastered(island, it)).length;
-      return open + (island.visited.includes(p.id) ? 0 : 5);
-    };
-    return notToday.sort((a, b) => score(b) - score(a)).slice(0, 2).map(p => p.id);
+    const notToday = PLACE_IDS.filter(p => !H.today.places.includes(p));
+    return notToday.sort((a, b) => (island.visited.includes(a) ? 1 : 0) - (island.visited.includes(b) ? 1 : 0)).slice(0, 2);
   }
 
   function renderMap() {
     const rec = recommended();
-    app.innerHTML = `<svg class="imap" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%">
-        <rect width="1000" height="700" fill="#BDE7FF"/>
-        <path d="M120 360 C100 160 360 70 560 90 C820 110 940 260 900 420 C870 580 640 660 440 640 C230 620 140 520 120 360Z" fill="#FFE7B8"/>
-        <path d="M190 360 C180 220 380 140 560 160 C760 180 850 290 820 410 C790 540 610 590 450 575 C290 560 200 480 190 360Z" fill="#C8EBA0"/>
-        ${places.map(p => `<g class="place" data-id="${p.id}" transform="translate(${p.x} ${p.y})" style="cursor:pointer">
-            <circle r="78" fill="#fff" opacity=".001"/>${PLACE_ICONS[p.icon] || ''}
-            ${rec.includes(p.id) ? `<g class="tw" transform="translate(-20 50)">${FOOT.replace('<svg', '<svg x="0" y="0"')}</g>` : ''}</g>`).join('')}
-      </svg>
-      <div class="walker char" style="position:absolute;width:min(14vw,20vh);left:50%;top:55%;translate:-50% -85%;z-index:5;transition:left 1s linear, top 1s linear">${drawCharacter(H.characterId, H.stage, { decoration: H.wearing })}</div>
+    app.innerHTML = `<div class="imap" style="position:absolute;left:50%;top:50%;width:max(100vw,160vh);height:max(62.5vw,100vh);translate:-50% -50%;overflow:hidden">
+        <div class="scene-bg" style="background-image:url(${asset(`bg/island${n}.jpg`)});animation-duration:40s"></div>
+        <div class="cloudshade" style="top:6%"></div><div class="cloudshade" style="top:50%;animation-delay:-15s;animation-duration:40s"></div>
+        ${PLACE_IDS.map(id => `<div class="place" data-id="${id}" style="position:absolute;left:${spots[id][0]}%;top:${spots[id][1]}%;width:16%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;cursor:pointer">
+            ${rec.includes(id) ? `<div class="tw" style="position:absolute;left:50%;bottom:-6%;translate:-50% 0">${FOOT}</div>` : ''}
+            ${rec.includes(id) || !island.visited.includes(id) ? '<div class="ring"></div>' : ''}</div>`).join('')}
+        <div class="walker" style="position:absolute;width:9%;left:${spots.start[0]}%;top:${spots.start[1]}%;translate:-50% -88%;z-index:5;transition:left 1s linear, top 1s linear">${charHtml(H.characterId, H.stage, { decoration: H.wearing })}</div>
+      </div>
       <button class="btn-pic home-btn" style="position:absolute;top:14px;left:14px;z-index:6" aria-label="집">${HOME_ICON}</button>`;
-    const walker = app.querySelector('.walker');
+    const map = app.querySelector('.imap'), walker = app.querySelector('.walker');
+    for (let i = 0; i < 14; i++) { const g = el('div', `left:${Math.random() * 100}%;top:${Math.random() < .5 ? Math.random() * 18 : 78 + Math.random() * 20}%;animation-delay:${-Math.random() * 2.4}s`, '', 'glint'); map.appendChild(g); }
     attachPetting(walker, {
       onTap: () => { ensureUnlocked(); walker.classList.remove('boing'); void walker.offsetWidth; walker.classList.add('boing'); playSfx('giggle'); },
       onRub: p => { burst(p.x, p.y, 'hearts'); playSfx('sparkle'); },
+      onHold: () => { walker.classList.add('hug'); playSfx('giggle'); speak(LINES.love); setTimeout(() => walker.classList.remove('hug'), 900); },
     });
     app.querySelector('.home-btn').addEventListener('click', () => { location.href = '../index.html'; });
-    const svg = app.querySelector('.imap');
-    svg.addEventListener('click', async e => {
+    map.addEventListener('click', async e => {
       ensureUnlocked();
-      if (busy) return;
+      if (busy || walker.contains(e.target)) return;
+      const r = map.getBoundingClientRect();
       const g = e.target.closest('.place');
-      const r = app.getBoundingClientRect();
-      let tx = e.clientX - r.left, ty = e.clientY - r.top;
-      if (g) { const b = g.getBoundingClientRect(); tx = b.left + b.width / 2 - r.left; ty = b.top + b.height * 0.75 - r.top; }
-      const wr = walker.getBoundingClientRect();
-      const cx = wr.left + wr.width / 2 - r.left, cy = wr.top + wr.height * 0.85 - r.top;
-      const dist = Math.hypot(tx - cx, ty - cy);
-      const ms = Math.max(300, dist * 6);
+      const tx = g ? spots[g.dataset.id][0] : ((e.clientX - r.left) / r.width) * 100;
+      const ty = g ? spots[g.dataset.id][1] + 4 : ((e.clientY - r.top) / r.height) * 100;
+      const cx = parseFloat(walker.style.left), cy = parseFloat(walker.style.top);
+      const ms = Math.max(350, Math.hypot((tx - cx) * r.width / 100, (ty - cy) * r.height / 100) * 4);
       busy = true;
       walker.style.transition = `left ${ms}ms linear, top ${ms}ms linear`;
-      walker.style.left = tx + 'px'; walker.style.top = ty + 'px';
-      const bob = walker.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-10px)' }, { transform: 'translateY(0)' }], { duration: 300, iterations: Math.ceil(ms / 300) });
+      walker.style.left = tx + '%'; walker.style.top = ty + '%';
+      walker.classList.add('walking'); playSfx('pop');
       await wait(ms);
-      bob.cancel();
+      walker.classList.remove('walking');
       busy = false;
-      if (g) openPlace(places.find(p => p.id === g.dataset.id));
+      if (g) openPlace(g.dataset.id);
     });
   }
 
   function onSuccess(item, type) {
     const newly = recordSuccess(island, item, type);
     saveState(state);
-    if (newly) { playSfx('fanfare'); }
+    if (newly) playSfx('fanfare');
   }
 
   async function giveReward() {
@@ -108,22 +107,21 @@ export function startIsland({ n, places, items, placeItems = {}, greeting }) {
     H.lastRewardDay = today();
     if (!left.length) { saveState(state); return; }
     const d = left[Math.floor(Math.random() * left.length)];
-    H.decorations.push(d.id);
-    H.wearing = d.id;
+    H.decorations.push(d.id); H.wearing = d.id;
     saveState(state);
-    const ov = el('div', 'background:radial-gradient(circle,#FFF8D6,#FFE3F0);display:flex;align-items:center;justify-content:center', `<div class="char" style="width:min(40vw,50vh)">${drawCharacter(H.characterId, H.stage, { decoration: d.id })}</div>`, 'overlay reward');
+    const ov = el('div', 'background:radial-gradient(circle,#FFF8D6,#FFE3F0);display:flex;align-items:center;justify-content:center', `<div style="width:min(36vw,52vh)">${charHtml(H.characterId, H.stage, { decoration: d.id })}</div>`, 'overlay reward');
     document.body.appendChild(ov);
     const r = ov.firstElementChild.getBoundingClientRect();
     burst(r.left + r.width / 2, r.top + r.height / 3, 'stars'); playSfx('fanfare');
-    await speak('선물이야! ' + d.name + '!');
+    await speak(LINES.present);
     await wait(1200);
     ov.remove();
   }
 
-  async function openPlace(place) {
-    if (!place) return;
-    markVisit(island, place.id, today());
-    if (!H.today.places.includes(place.id)) H.today.places.push(place.id);
+  async function openPlace(id) {
+    if (!RUNNERS[id]) return;
+    markVisit(island, id, today());
+    if (!H.today.places.includes(id)) H.today.places.push(id);
     saveState(state);
     const stage = el('div', 'background:#fff;overflow:hidden', '', 'overlay stage');
     document.body.appendChild(stage);
@@ -131,29 +129,39 @@ export function startIsland({ n, places, items, placeItems = {}, greeting }) {
     stage.appendChild(inner);
     const back = el('button', 'position:absolute;top:14px;left:14px;z-index:20;background:none;box-shadow:none', BACK_ICON, 'btn-pic back-btn');
     stage.appendChild(back);
-    const closed = new Promise(res => back.addEventListener('click', () => res('closed')));
+    let closed = false;
+    const closedP = new Promise(res => back.addEventListener('click', () => { closed = true; res('closed'); }));
     const ctx = {
-      stage: inner, speak, phrase, sfx: playSfx, burst, rng: Math.random, call,
-      characterSvg: drawCharacter(H.characterId, H.stage, { decoration: H.wearing }), onSuccess,
+      stage: inner, phrase, sfx: playSfx, burst, rng: Math.random, speakLines: LINES,
+      speak: t => (closed ? Promise.resolve(true) : speak(t)),
+      characterHtml: charHtml(H.characterId, H.stage, { decoration: H.wearing }), onSuccess,
     };
-    const outcome = await Promise.race([place.run(ctx, place.params()).then(() => 'done').catch(err => { console.error(err); return 'error'; }), closed]);
+    const outcome = await Promise.race([RUNNERS[id].run(ctx, places[id]()).then(() => 'done').catch(err => { console.error(err); return 'error'; }), closedP]);
+    stopSpeech();
     stage.remove();
     if (outcome === 'done') await giveReward();
-    const pr = islandProgress(island, items, places.map(p => p.id));
+    const pr = islandProgress(island, items, PLACE_IDS);
     if (pr.cleared && !island.cleared) return clearIsland();
     renderMap();
   }
 
   async function clearIsland() {
     const from = H.stage, to = Math.min(H.stage + 1, 7);
-    island.cleared = true;
-    H.stage = to;
+    island.cleared = true; H.stage = to;
+    if (n === 8 && !state.friends.some(f => f.characterId === H.characterId && f.subject === 'hangul')) state.friends.push({ characterId: H.characterId, subject: 'hangul', finishedAt: today() });
     saveState(state);
     playSfx('fanfare');
     await speak(phrase('cleared'));
     location.href = `../index.html?evolve=${from}-${to}`;
   }
 
-  window.__island = { state, island, openPlace: id => openPlace(places.find(p => p.id === id)), places };
+  window.__island = { state, island, openPlace, items, title: ISLANDS[n].title };
   renderMap();
+}
+
+export function progressFor(n, state) {
+  const isl = state.subjects.hangul.islands[String(n)];
+  if (!isl) return null;
+  const items = islandUnits(n, state.profile);
+  return { ...islandProgress(isl, items, PLACE_IDS), left: items.filter(it => !isMastered(isl, it)) };
 }
