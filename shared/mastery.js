@@ -1,7 +1,7 @@
 // Mastery tracking and island clear rule (pure)
 export const MASTERY_COUNT = 5;
 export const MASTERY_TYPES = 2;
-export const MIN_DAYS = 4;
+export const MIN_DAYS = 0; // no waiting: an island clears as soon as everything is learned
 
 function entry(island, item) {
   if (!island.mastery[item]) island.mastery[item] = { count: 0, types: [] };
